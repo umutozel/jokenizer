@@ -1,3 +1,3 @@
-lib
-test
-tsconfig.json
+lib/
+test/
+tsconfig.json/
