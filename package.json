@@ -2,14 +2,20 @@
   "name": "jokenizer",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "nyc mocha -r ts-node/register test/**/*.spec.ts",
+    "coveralls": "nyc mocha && nyc report --reporter=text-lcov | coveralls"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/chai": "^4.1.1",
+    "@types/mocha": "^2.2.46",
+    "chai": "^4.1.2",
+    "mocha": "^5.2.0",
+    "nyc": "^11.4.1",
     "ts-node": "^7.0.0",
-    "typescript": "^2.9.2"
+    "typescript": "^2.9.2",
+    "tslint": "~5.6.0"
   }
 }
