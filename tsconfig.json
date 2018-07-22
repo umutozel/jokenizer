@@ -2,10 +2,11 @@
   "compilerOptions": {
     "target": "es5",
     "module": "umd",
-    "declaration": true,
-    "noImplicitAny": true,
-    "strictNullChecks": true,
     "sourceMap": true,
     "outDir": "./dist"
-  }
+  },
+  "compileOnSave": true,
+  "include": [
+    "lib/**/*.ts"
+  ]
 }
