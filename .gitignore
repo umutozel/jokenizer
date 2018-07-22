@@ -73,3 +73,6 @@ typings/
 .serverless
 
 dist/
+
+.DS_Store
+test_results
