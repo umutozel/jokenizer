@@ -1,5 +1,19 @@
 export default function tokenize(exp: string) {
+    if (!exp) return null;
+    
+    const len = exp.length;
     let idx = 0;
+    let ch: string;
+
+    while(idx < len) {
+
+    }
+
+    function skip() {
+    }
+
+    function isSpace(ch: string) {
+    }
 
     return null;
 }
