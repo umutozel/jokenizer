@@ -17,9 +17,12 @@ export default function tokenize(exp: string): Expression {
             || getVar()
             || getGroup();
         
-        if (ch === '.') {
-            return prop
-        }
+        if (ch === '.')
+            return propertyExp(exp, getExp());
+
+        skip();
+
+        return exp;
     }
 
     function getNumeric() {
@@ -35,10 +38,10 @@ export default function tokenize(exp: string): Expression {
         x();
         if (ch === separator) {
             n += ch;
+            x();
         }
-        x();
 
-        if (!isSpace(c))
+        if (!isVariableStart(c))
             throw new Error(`Unexpected character (${ch}) at index ${idx}`);
         
         return n ? literalExp(Number(n)) : null;
@@ -64,11 +67,11 @@ export default function tokenize(exp: string): Expression {
         if (isVariable(c)) {
             v += ch;
             move();
-        }
 
-        while (stillVariable(c)) {
-            v += ch;
-            move();
+            while (stillVariable(c)) {
+                v += ch;
+                move();
+            }
         }
 
         return v ? literalExp(v) : null;
@@ -133,14 +136,14 @@ function eq(source: string, idx: number, target: string) {
     return source.substr(idx, target.length) === target;
 }
 
-function isVariable(c: Number) {
+function isVariableStart(c: Number) {
     return (c === 36) || (c === 95) || // `$`, `_`
         (c >= 65 && c <= 90) || // A...Z
         (c >= 97 && c <= 122); // a...z
 }
 
 function stillVariable(c: Number) {
-    return isVariable(c) || isNumber(c);
+    return isVariableStart(c) || isNumber(c);
 }
 
 const separator = (function () {
