@@ -1,3 +1,8 @@
+import {
+    ExpressionType, Expression, LiteralExpression, PropertyExpression,
+    UnaryExpression, BinaryExpression, CallExpression, VariableExpression
+} from './types';
+
 export default function tokenize(exp: string): Expression {
     if (!exp) return null;
 
@@ -11,21 +16,30 @@ export default function tokenize(exp: string): Expression {
     function getExp() {
         skip();
 
-        let exp = getNumeric()
-            || getString()
-            || getUnary()
-            || getVar()
-            || getGroup();
+        let e: Expression = tryNumeric()
+            || tryString()
+            || tryUnary()
+            || tryVar()
+            || tryGroup();
         
-        if (ch === '.')
-            return propertyExp(exp, getExp());
+        if (!exp) return null;
+        
+        if (ch === '.') return propertyExp(e, getExp());
 
         skip();
+
+        const op = binary.find(b => eq(exp, idx, b));
+        if (op) return getBinary(e, op);
+
+        if (e.type === ExpressionType.Literal) {
+            const le = <VariableExpression>e;
+            if (le.name in knowns) return literalExp(knowns[le.name]);
+        }
 
         return exp;
     }
 
-    function getNumeric() {
+    function tryNumeric() {
         let n = '';
 
         function x() {
@@ -41,16 +55,15 @@ export default function tokenize(exp: string): Expression {
             x();
         }
 
-        if (!isVariableStart(c))
-            throw new Error(`Unexpected character (${ch}) at index ${idx}`);
+        if (isVariableStart(c)) throw new Error(`Unexpected character (${ch}) at index ${idx}`);
         
         return n ? literalExp(Number(n)) : null;
     }
 
-    function getString() {
+    function tryString() {
     }
 
-    function getUnary() {
+    function tryUnary() {
         const u = unary.find(u => eq(exp, idx, u));
 
         if (u) {
@@ -64,20 +77,40 @@ export default function tokenize(exp: string): Expression {
     function getVar() {
         let v = '';
 
-        if (isVariable(c)) {
-            v += ch;
-            move();
-
+        if (isVariableStart(c)) {
             while (stillVariable(c)) {
                 v += ch;
                 move();
             }
         }
 
-        return v ? literalExp(v) : null;
+        return v;
     }
 
-    function getGroup() {
+    function tryVar() {
+        const v = getVar();
+        if (v) {
+            skip();
+
+            if (eq(exp, idx, '(')) {
+                move();
+
+                const args = [];
+                do {
+                    args.push(getExp());
+                    skip();
+                } while (eq(exp, idx, ','));
+
+                to(')');
+
+                return callExp();
+            }
+        }
+
+        return v ? variableExp(v) : null;
+    }
+
+    function tryGroup() {
         if (ch !== '(') return null;
 
         move();
@@ -87,7 +120,7 @@ export default function tokenize(exp: string): Expression {
         return exp;
     }
 
-    function getBinary(left: Expression) {
+    function getBinary(left: Expression, op: string) {
     }
 
     function code() {
@@ -114,7 +147,6 @@ export default function tokenize(exp: string): Expression {
 
     function to(c: string) {
         skip();
-
         if (!eq(exp, idx, c))
             throw new Error(`Expected ${c} at index ${idx}, found ${exp[idx]}`);
         
@@ -166,36 +198,12 @@ const unary = ['-', '!', '~', '+'],
         'null': null
     };
 
-export interface Expression {
-    type: ExpressionType;
-}
-
-export interface LiteralExpression extends Expression {
-    value
-}
-
-export interface PropertyExpression extends Expression {
-    owner: Expression;
-    property: Expression;
-}
-
-export interface UnaryExpression extends Expression {
-    operator: string;
-    target: Expression;
-}
-
-export interface BinaryExpression extends Expression {
-    operator: string;
-    left: Expression;
-    right: Expression;
-}
-
-export const enum ExpressionType {
-    Literal, Property, Unary, Binary, Call
-}
-
 function literalExp(value) {
     return <LiteralExpression>{ type: ExpressionType.Literal, value };
+}
+
+function variableExp(name: string) {
+    return <VariableExpression>{ type: ExpressionType.Variable, name };
 }
 
 function propertyExp(owner: Expression, property: Expression) {
@@ -204,4 +212,8 @@ function propertyExp(owner: Expression, property: Expression) {
 
 function unaryExp(operator: string, target: Expression) {
     return <UnaryExpression>{ type: ExpressionType.Unary, target, operator }
+}
+
+function callExp(owner: Expression, name: string, args: Expression[]) {
+    return <CallExpression>{ type: ExpressionType.Call, owner, name, args };
 }
