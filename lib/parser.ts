@@ -6,11 +6,7 @@ import {
 export default function tokenize(exp: string): Expression {
     if (!exp) return null;
 
-    const len = exp.length;
-    let idx = 0;
-
-    let c: number;
-    let ch: string;
+    let idx = 0, c: number, ch: string;
     curr();
 
     function getExp() {
@@ -19,8 +15,7 @@ export default function tokenize(exp: string): Expression {
         let e: Expression = tryNumeric()
             || tryString()
             || tryUnary()
-            || tryVar()
-            || tryGroup();
+            || tryVar();
         
         if (!exp) return null;
         
@@ -28,19 +23,7 @@ export default function tokenize(exp: string): Expression {
 
         skip();
 
-        if (ch === '(') {
-            move();
-
-            const args = [];
-            do {
-                args.push(getExp());
-                skip();
-            } while (eq(exp, idx, ','));
-
-            to(')');
-
-            return callExp(e, args);
-        }
+        tryCall();
 
         const op = binary.find(b => eq(exp, idx, b));
         if (op) return getBinary(e, op);
@@ -88,9 +71,6 @@ export default function tokenize(exp: string): Expression {
         return null;
     }
 
-    function getVar() {
-    }
-
     function tryVar() {
         let v = '';
 
@@ -104,17 +84,25 @@ export default function tokenize(exp: string): Expression {
         return v ? variableExp(v) : null;
     }
 
-    function tryGroup() {
-        if (ch !== '(') return null;
-
-        move();
-        const exp = getExp();
-        to(')');
-
-        return exp;
+    function getBinary(left: Expression, op: string) {
     }
 
-    function getBinary(left: Expression, op: string) {
+    function tryCall(e: Expression) {
+        return ch === '(' ? getCall(e) : e;
+    }
+
+    function getCall(e: Expression) {
+        move();
+
+        const args = [];
+        do {
+            args.push(getExp());
+            skip();
+        } while (eq(exp, idx, ','));
+
+        to(')');
+
+        return callExp(e, args);
     }
 
     function code() {
