@@ -28,6 +28,20 @@ export default function tokenize(exp: string): Expression {
 
         skip();
 
+        if (ch === '(') {
+            move();
+
+            const args = [];
+            do {
+                args.push(getExp());
+                skip();
+            } while (eq(exp, idx, ','));
+
+            to(')');
+
+            return callExp(e, args);
+        }
+
         const op = binary.find(b => eq(exp, idx, b));
         if (op) return getBinary(e, op);
 
@@ -75,35 +89,15 @@ export default function tokenize(exp: string): Expression {
     }
 
     function getVar() {
+    }
+
+    function tryVar() {
         let v = '';
 
         if (isVariableStart(c)) {
             while (stillVariable(c)) {
                 v += ch;
                 move();
-            }
-        }
-
-        return v;
-    }
-
-    function tryVar() {
-        const v = getVar();
-        if (v) {
-            skip();
-
-            if (eq(exp, idx, '(')) {
-                move();
-
-                const args = [];
-                do {
-                    args.push(getExp());
-                    skip();
-                } while (eq(exp, idx, ','));
-
-                to(')');
-
-                return callExp();
             }
         }
 
@@ -214,6 +208,6 @@ function unaryExp(operator: string, target: Expression) {
     return <UnaryExpression>{ type: ExpressionType.Unary, target, operator }
 }
 
-function callExp(owner: Expression, name: string, args: Expression[]) {
-    return <CallExpression>{ type: ExpressionType.Call, owner, name, args };
+function callExp(callee: Expression, args: Expression[]) {
+    return <CallExpression>{ type: ExpressionType.Call, callee, args };
 }

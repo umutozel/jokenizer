@@ -31,7 +31,6 @@ export interface BinaryExpression extends Expression {
 }
 
 export interface CallExpression extends Expression {
-    owner: Expression;
-    name: string;
+    callee: Expression;
     args: Expression[];
 }
