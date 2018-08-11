@@ -1,8 +1,8 @@
 import {
     ExpressionType, Expression,
-    LiteralExpression, VariableExpression, UnaryExpression,
+    LiteralExpression, VariableExpression, UnaryExpression, GroupExpression,
     BinaryExpression, MemberExpression, CallExpression,
-    GroupExpression, LambdaExpression, TernaryExpression
+    FuncExpression, TernaryExpression
 } from './types';
 
 export default function tokenize(exp: string): Expression {
@@ -20,21 +20,17 @@ export default function tokenize(exp: string): Expression {
 
         let e = tryLiteral()
             || tryVariable()
-            || tryUnary();
+            || tryUnary()
+            || tryGroup();
 
-        if (!e) {
-            if (idx < len) throw new Error(err);
-
-            return e;
-        }
+        if (!e) return e;
 
         skip();
 
         return tryBinary(e)
             || tryMember(e)
             || tryCall(e)
-            || tryGroup(e)
-            || tryLambda(e)
+            || tryFunc(e)
             || tryTernary(e)
             || tryKnown(e)
             || e;
@@ -59,7 +55,8 @@ export default function tokenize(exp: string): Expression {
             }
 
             if (n) {
-                if (isVariableStart(cd())) throw new Error(`Unexpected character (${ch}) at index ${idx}`);
+                if (isVariableStart(cd()))
+                    throw new Error(`Unexpected character (${ch}) at index ${idx}`);
 
                 return literalExp(Number(n));
             }
@@ -83,7 +80,6 @@ export default function tokenize(exp: string): Expression {
 
                 if (c === '\\') {
                     c = nxt();
-
                     switch (c) {
                         case 'b': s += '\b'; break;
                         case 'f': s += '\f'; break;
@@ -121,22 +117,37 @@ export default function tokenize(exp: string): Expression {
     }
 
     function tryUnary() {
-        const u = unary.find(u => eq(exp, idx, u));
+        const u = unary.find(u => get(u));
 
-        if (u) {
-            move(u.length);
-            return unaryExp(u, getExp());
-        }
+        if (u) return unaryExp(u, getExp());
 
         return null;
     }
 
+    function tryGroup() {
+        if (get('('))
+            return groupExp(getGroup());
+
+        return null;
+    }
+
+    function getGroup() {
+        const exps: Expression[] = [];
+
+        do {
+            exps.push(getExp());
+            skip();
+        } while (get(','));
+
+        to(')');
+
+        return exps;
+    }
+
     function tryBinary(e: Expression) {
-        const op = binary.find(b => eq(exp, idx, b));
+        const op = binary.find(b => get(b));
 
         if (op) {
-            move(op.length);
-
             const right = getExp();
 
             if (right.type === ExpressionType.Binary)
@@ -155,38 +166,54 @@ export default function tokenize(exp: string): Expression {
     }
 
     function tryCall(e: Expression) {
-        return ch() === '(' ? getCall(e) : e;
+        return get('(') ? getCall(e) : null;
     }
 
     function getCall(e: Expression) {
-        move();
-
         const args = getGroup();
-
         to(')');
 
         return callExp(e, args);
     }
 
-    function tryGroup(e: Expression) {
-        if (ch() === ',')
-            return [e].concat(getGroup());
+    function tryFunc(e: Expression) {
+        if (get('=>'))
+            return funcExp(getParameters(e), getExp());
+
+        if (e.type === ExpressionType.Variable && (<VariableExpression>e).name === 'function') {
+            const parameters = getParameters(e);
+            to('{');
+
+            const body = getExp();
+            get(';');
+            to('}');
+
+            return funcExp(parameters, body);
+        }
 
         return null;
     }
 
-    function getGroup() {
-        const exps: Expression[] = [];
+    function getParameters(e: Expression) {
+        let parameters: string[];
 
-        do {
-            exps.push(getExp());
-            skip();
-        } while (ch() === ',');
+        if (e.type === ExpressionType.Group) {
+            const ge = <GroupExpression>e;
+            parameters = ge.expressions.map(x => {
+                if (x.type !== ExpressionType.Variable)
+                    throw new Error(`Invalid parameter at ${idx}`);
 
-        return exps;
-    }
+                return (<VariableExpression>x).name;
+            });
+        }
+        else {
+            if (e.type !== ExpressionType.Variable)
+                throw new Error(`Invalid parameter at ${idx}`);
 
-    function tryLambda(e: Expression) {
+            parameters = [(<VariableExpression>e).name];
+        }
+
+        return parameters;
     }
 
     function tryTernary(e: Expression) {
@@ -206,6 +233,15 @@ export default function tokenize(exp: string): Expression {
         }
 
         return null;
+    }
+
+    function get(s: string) {
+        if (eq(exp, idx, s)) {
+            move(s.length);
+            return true;
+        }
+
+        return false;
     }
 
     function move(count: number = 1) {
@@ -296,8 +332,12 @@ function unaryExp(operator: string, target: Expression) {
     return <UnaryExpression>{ type: ExpressionType.Unary, target, operator }
 }
 
+function groupExp(expressions: Expression[]) {
+    return <GroupExpression>{ type: ExpressionType.Group, expressions };
+}
+
 function binaryExp(operator: string, left: Expression, right: Expression) {
-    return <BinaryExpression>{ type: ExpressionType.Binary, left, right };
+    return <BinaryExpression>{ type: ExpressionType.Binary, operator, left, right };
 }
 
 function memberExp(owner: Expression, member: Expression) {
@@ -308,6 +348,10 @@ function callExp(callee: Expression, args: Expression[]) {
     return <CallExpression>{ type: ExpressionType.Call, callee, args };
 }
 
-function ternaryExp(predicate: Expression, whenTrue: Expression, whenFalse: Expression)  {
+function funcExp(parameters: string[], body: Expression) {
+    return <FuncExpression>{ type: ExpressionType.Func, parameters, body };
+}
+
+function ternaryExp(predicate: Expression, whenTrue: Expression, whenFalse: Expression) {
     return <TernaryExpression>{ type: ExpressionType.Ternary, predicate, whenTrue, whenFalse };
 }

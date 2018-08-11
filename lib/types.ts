@@ -1,5 +1,13 @@
 export const enum ExpressionType {
-    Literal, Variable, Unary, Member, Binary, Call, Group, Lambda, Ternary
+    Literal = 'L', 
+    Variable = 'V', 
+    Unary = 'U', 
+    Group = 'G', 
+    Member = 'M', 
+    Binary = 'B', 
+    Call = 'C', 
+    Func = 'F', 
+    Ternary = 'T'
 }
 
 export interface Expression {
@@ -19,6 +27,10 @@ export interface UnaryExpression extends Expression {
     target: Expression;
 }
 
+export interface GroupExpression extends Expression {
+    expressions: Expression[];
+}
+
 export interface MemberExpression extends Expression {
     owner: Expression;
     member: Expression;
@@ -35,11 +47,7 @@ export interface CallExpression extends Expression {
     args: Expression[];
 }
 
-export interface GroupExpression extends Expression {
-    expressions: Expression[];
-}
-
-export interface LambdaExpression extends Expression {
+export interface FuncExpression extends Expression {
     parameters: string[];
     body: Expression;
 }

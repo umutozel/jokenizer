@@ -1,15 +1,15 @@
 import tokenize from '../lib/parser';
 import {
     ExpressionType, Expression,
-    LiteralExpression, UnaryExpression, VariableExpression,
+    LiteralExpression, VariableExpression, UnaryExpression, GroupExpression,
     BinaryExpression, MemberExpression, CallExpression,
-    GroupExpression, LambdaExpression
+    FuncExpression, TernaryExpression
 } from '../lib/types';
 
 import { expect } from 'chai';
 import 'mocha';
 
-describe('Tokenize function', () => {
+describe('Tokenizer', () => {
 
     it('should return null', () => {
         const exp = tokenize('');
@@ -43,7 +43,12 @@ describe('Tokenize function', () => {
     });
 
     it('should return BinaryExpression', () => {
-        const e = tokenize('3 > 2');
+        const e = tokenize('v1 > v2');
         expect(e.type).to.equal(ExpressionType.Binary);
+    });
+
+    it('should return FuncExpression', () => {
+        const e = tokenize('(a, b) => a < b');
+        expect(e.type).to.equal(ExpressionType.Func);
     });
 });
