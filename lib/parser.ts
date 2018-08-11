@@ -1,8 +1,8 @@
 import {
     ExpressionType, Expression,
-    LiteralExpression, UnaryExpression, VariableExpression,
+    LiteralExpression, VariableExpression, UnaryExpression,
     BinaryExpression, MemberExpression, CallExpression,
-    GroupExpression, LambdaExpression
+    GroupExpression, LambdaExpression, TernaryExpression
 } from './types';
 
 export default function tokenize(exp: string): Expression {
@@ -30,19 +30,14 @@ export default function tokenize(exp: string): Expression {
 
         skip();
 
-        e = tryBinary(e)
+        return tryBinary(e)
             || tryMember(e)
             || tryCall(e)
             || tryGroup(e)
             || tryLambda(e)
+            || tryTernary(e)
             || tryKnown(e)
             || e;
-
-        skip();
-
-        if (idx < len) throw new Error(err);
-
-        return e;
     }
 
     function tryLiteral() {
@@ -58,7 +53,7 @@ export default function tokenize(exp: string): Expression {
             }
 
             x();
-            if (ch() === Separator) {
+            if (ch() === separator) {
                 n += ch();
                 x();
             }
@@ -75,7 +70,7 @@ export default function tokenize(exp: string): Expression {
         function tryString() {
             let c = ch();
             if (c !== '"' && c !== "'") return null;
-            
+
             const q = c;
             let s = '';
 
@@ -85,10 +80,10 @@ export default function tokenize(exp: string): Expression {
                     move();
                     return literalExp(s);
                 }
-                
+
                 if (c === '\\') {
                     c = nxt();
-                    
+
                     switch (c) {
                         case 'b': s += '\b'; break;
                         case 'f': s += '\f'; break;
@@ -99,7 +94,7 @@ export default function tokenize(exp: string): Expression {
                         case '0': s += '\0'; break;
                         case "'": s += "'"; break;
                         case '"': s += '"'; break;
-                        case '\\' : s += '\\'; break;
+                        case '\\': s += '\\'; break;
                     }
                 } else {
                     s += c;
@@ -140,7 +135,14 @@ export default function tokenize(exp: string): Expression {
         const op = binary.find(b => eq(exp, idx, b));
 
         if (op) {
+            move(op.length);
 
+            const right = getExp();
+
+            if (right.type === ExpressionType.Binary)
+                return fixPredence(e, op, <BinaryExpression>right);
+
+            return binaryExp(op, e, right);
         }
 
         return null;
@@ -148,6 +150,8 @@ export default function tokenize(exp: string): Expression {
 
     function tryMember(e: Expression) {
         if (ch() === '.') return memberExp(e, getExp());
+
+        return null;
     }
 
     function tryCall(e: Expression) {
@@ -177,12 +181,22 @@ export default function tokenize(exp: string): Expression {
         do {
             exps.push(getExp());
             skip();
-        } while (eq(exp, idx, ','));
+        } while (ch() === ',');
 
         return exps;
     }
 
     function tryLambda(e: Expression) {
+    }
+
+    function tryTernary(e: Expression) {
+        if (ch() !== '?') return null;
+
+        const whenTrue = getExp();
+        to(':');
+        const whenFalse = getExp();
+
+        return ternaryExp(e, whenTrue, whenFalse);
     }
 
     function tryKnown(e: Expression) {
@@ -216,35 +230,14 @@ export default function tokenize(exp: string): Expression {
         move(c.length);
     }
 
-    return getExp();
-}
+    const e = getExp();
 
-function isSpace(c: Number) {
-    return c === 32 || c === 9;
-}
+    skip();
 
-function isNumber(c: Number) {
-    return (c >= 48 && c <= 57);
-}
+    if (idx < len) throw new Error(err);
 
-function eq(source: string, idx: number, target: string) {
-    return source.substr(idx, target.length) === target;
+    return e;
 }
-
-function isVariableStart(c: Number) {
-    return (c === 36) || (c === 95) || // `$`, `_`
-        (c >= 65 && c <= 90) || // A...Z
-        (c >= 97 && c <= 122); // a...z
-}
-
-function stillVariable(c: Number) {
-    return isVariableStart(c) || isNumber(c);
-}
-
-const Separator = (function () {
-    const n = 1.1;
-    return n.toLocaleString().substr(1, 1);
-})();
 
 const unary = ['-', '!', '~', '+'],
     binary = [
@@ -259,7 +252,37 @@ const unary = ['-', '!', '~', '+'],
         'true': true,
         'false': false,
         'null': null
-    };
+    },
+    separator = (function () {
+        const n = 1.1;
+        return n.toLocaleString().substr(1, 1);
+    })();
+
+function eq(source: string, idx: number, target: string) {
+    return source.substr(idx, target.length) === target;
+}
+
+function isSpace(c: Number) {
+    return c === 32 || c === 9;
+}
+
+function isNumber(c: Number) {
+    return (c >= 48 && c <= 57);
+}
+
+function isVariableStart(c: Number) {
+    return (c === 36) || (c === 95) || // `$`, `_`
+        (c >= 65 && c <= 90) || // A...Z
+        (c >= 97 && c <= 122); // a...z
+}
+
+function stillVariable(c: Number) {
+    return isVariableStart(c) || isNumber(c);
+}
+
+function fixPredence(left: Expression, leftOp: string, right: BinaryExpression) {
+
+}
 
 function literalExp(value) {
     return <LiteralExpression>{ type: ExpressionType.Literal, value };
@@ -269,14 +292,22 @@ function variableExp(name: string) {
     return <VariableExpression>{ type: ExpressionType.Variable, name };
 }
 
-function memberExp(owner: Expression, member: Expression) {
-    return <MemberExpression>{ type: ExpressionType.Member, owner, member };
-}
-
 function unaryExp(operator: string, target: Expression) {
     return <UnaryExpression>{ type: ExpressionType.Unary, target, operator }
 }
 
+function binaryExp(operator: string, left: Expression, right: Expression) {
+    return <BinaryExpression>{ type: ExpressionType.Binary, left, right };
+}
+
+function memberExp(owner: Expression, member: Expression) {
+    return <MemberExpression>{ type: ExpressionType.Member, owner, member };
+}
+
 function callExp(callee: Expression, args: Expression[]) {
     return <CallExpression>{ type: ExpressionType.Call, callee, args };
+}
+
+function ternaryExp(predicate: Expression, whenTrue: Expression, whenFalse: Expression)  {
+    return <TernaryExpression>{ type: ExpressionType.Ternary, predicate, whenTrue, whenFalse };
 }
