@@ -284,6 +284,15 @@ const unary = ['-', '!', '~', '+'],
         '<<', '>>', '>>>',
         '+', '-',
         '*', '/', '%'],
+    precedence = {
+        '&&': 0, '||': 0,
+        '|': 1, '^': 1, '&': 1,
+        '==': 2, '!=': 2, '===': 2, '!==': 2,
+        '<': 3, '>': 3, '<=': 3, '>=': 3,
+        '<<': 4, '>>': 4, '>>>': 4,
+        '+': 5, '-': 5,
+        '*': 6, '/': 6, '%': 6
+    },
     knowns = {
         'true': true,
         'false': false,
@@ -317,7 +326,12 @@ function stillVariable(c: Number) {
 }
 
 function fixPredence(left: Expression, leftOp: string, right: BinaryExpression) {
+    const p1 = precedence[leftOp];
+    const p2 = precedence[right.operator];
 
+    return p2 < p1 
+        ? binaryExp(right.operator, binaryExp(leftOp, left, right.left), right.right)
+        : binaryExp(leftOp, left, right);
 }
 
 function literalExp(value) {
