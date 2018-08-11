@@ -1,5 +1,10 @@
 import tokenize from '../lib/parser';
-import { ExpressionType } from '../lib/types';
+import {
+    ExpressionType, Expression,
+    LiteralExpression, UnaryExpression, VariableExpression,
+    BinaryExpression, MemberExpression, CallExpression,
+    GroupExpression, LambdaExpression
+} from '../lib/types';
 
 import { expect } from 'chai';
 import 'mocha';
@@ -11,18 +16,34 @@ describe('Tokenize function', () => {
         expect(exp).to.equal(null);
     });
 
+    it('should return number LiteralExpression', () => {
+        const e = tokenize('42');
+        expect(e.type).to.equal(ExpressionType.Literal);
+
+        const le = <LiteralExpression>e;
+        expect(le.value).to.equal(42);
+    });
+
+    it('should return string LiteralExpression', () => {
+        const e = tokenize('"42"');
+        expect(e.type).to.equal(ExpressionType.Literal);
+
+        const le = <LiteralExpression>e;
+        expect(le.value).to.equal('42');
+    });
+
     it('should return VariableExpression', () => {
-        const exp = tokenize('Variable');
-        expect(exp.type).to.equal(ExpressionType.Variable);
+        const e = tokenize('Variable');
+        expect(e.type).to.equal(ExpressionType.Variable);
     });
 
     it('should return UnaryExpression', () => {
-        const exp = tokenize('!Variable');
-        expect(exp.type).to.equal(ExpressionType.Unary);
+        const e = tokenize('!Variable');
+        expect(e.type).to.equal(ExpressionType.Unary);
     });
 
     it('should return BinaryExpression', () => {
-        const exp = tokenize('3 > 2');
-        expect(exp.type).to.equal(ExpressionType.Binary);
+        const e = tokenize('3 > 2');
+        expect(e.type).to.equal(ExpressionType.Binary);
     });
 });
