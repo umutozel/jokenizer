@@ -12,7 +12,7 @@ export default function tokenize(exp: string): Expression {
         err = 'Cannot parse expression.';
     let idx = 0;
 
-    const c = () => exp.charCodeAt(idx);
+    const cd = () => exp.charCodeAt(idx);
     const ch = () => exp.charAt(idx);
 
     function getExp() {
@@ -24,7 +24,7 @@ export default function tokenize(exp: string): Expression {
 
         if (!e) {
             if (idx < len) throw new Error(err);
-            
+
             return e;
         }
 
@@ -51,7 +51,7 @@ export default function tokenize(exp: string): Expression {
             let n = '';
 
             function x() {
-                while (isNumber(c())) {
+                while (isNumber(cd())) {
                     n += ch();
                     move();
                 }
@@ -64,7 +64,7 @@ export default function tokenize(exp: string): Expression {
             }
 
             if (n) {
-                if (isVariableStart(c())) throw new Error(`Unexpected character (${ch}) at index ${idx}`);
+                if (isVariableStart(cd())) throw new Error(`Unexpected character (${ch}) at index ${idx}`);
 
                 return literalExp(Number(n));
             }
@@ -73,6 +73,36 @@ export default function tokenize(exp: string): Expression {
         }
 
         function tryString() {
+            let c = ch();
+            if (c !== '"' && c !== "'") return null;
+            
+            const q = c;
+            let s = '';
+
+            while (c = nxt()) {
+
+                if (c === q) {
+                    move();
+                    return literalExp(s);
+                }
+                
+                if (c === '\\') {
+                    c = nxt();
+                    
+                    switch (c) {
+                        case 'n': s += '\n'; break;
+                        case 'r': s += '\r'; break;
+                        case 't': s += '\t'; break;
+                        case 'b': s += '\b'; break;
+                        case 'f': s += '\f'; break;
+                        case 'v': s += '\x0B'; break;
+                    }
+                } else {
+                    s += c;
+                }
+            }
+
+            throw new Error(`Unclosed quote after ${s}`);
         }
 
         return tryNumeric() || tryString();
@@ -81,8 +111,8 @@ export default function tokenize(exp: string): Expression {
     function tryVariable() {
         let v = '';
 
-        if (isVariableStart(c())) {
-            while (stillVariable(c())) {
+        if (isVariableStart(cd())) {
+            while (stillVariable(cd())) {
                 v += ch();
                 move();
             }
@@ -164,8 +194,13 @@ export default function tokenize(exp: string): Expression {
         idx += count;
     }
 
+    function nxt() {
+        move();
+        return idx < len ? ch() : null;
+    }
+
     function skip() {
-        while (isSpace(c())) move();
+        while (isSpace(cd())) move();
     }
 
     function to(c: string) {
