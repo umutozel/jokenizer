@@ -24,6 +24,14 @@ describe('Tokenizer', () => {
         expect(le.value).to.equal(42);
     });
 
+    it('should return decimal number LiteralExpression', () => {
+        const e = tokenize('42.4242');
+        expect(e.type).to.equal(ExpressionType.Literal);
+
+        const le = <LiteralExpression>e;
+        expect(le.value).to.equal(42.4242);
+    });
+
     it('should return string LiteralExpression', () => {
         const e = tokenize('"4\'2"');
         expect(e.type).to.equal(ExpressionType.Literal);

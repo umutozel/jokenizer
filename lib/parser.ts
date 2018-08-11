@@ -49,8 +49,8 @@ export default function tokenize(exp: string): Expression {
             }
 
             x();
-            if (ch() === separator) {
-                n += ch();
+            if (get(separator)) {
+                n += separator;
                 x();
             }
 
