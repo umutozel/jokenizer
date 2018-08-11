@@ -1,67 +1,96 @@
 import {
-    ExpressionType, Expression, 
+    ExpressionType, Expression,
     LiteralExpression, UnaryExpression, VariableExpression,
-    BinaryExpression, MemberExpression, CallExpression, 
+    BinaryExpression, MemberExpression, CallExpression,
     GroupExpression, LambdaExpression
 } from './types';
 
 export default function tokenize(exp: string): Expression {
     if (!exp) return null;
 
+    const len = exp.length,
+        err = 'Cannot parse expression.';
     let idx = 0;
 
     const c = () => exp.charCodeAt(idx);
     const ch = () => exp.charAt(idx);
-    
+
     function getExp() {
         skip();
 
-        const e = tryLiteral()
-            || tryUnary()
-            || tryVariable();
-        
-        if (!exp) return null;
-        
+        let e = tryLiteral()
+            || tryVariable()
+            || tryUnary();
+
+        if (!e) {
+            if (idx < len) throw new Error(err);
+            
+            return e;
+        }
+
         skip();
 
-        return tryBinary(e)
+        e = tryBinary(e)
             || tryMember(e)
             || tryCall(e)
             || tryGroup(e)
             || tryLambda(e)
             || tryKnown(e)
-            || exp;
+            || e;
+
+        skip();
+
+        if (idx < len) throw new Error(err);
+
+        return e;
     }
 
     function tryLiteral() {
 
         function tryNumeric() {
             let n = '';
-    
+
             function x() {
                 while (isNumber(c())) {
-                    n += ch;
+                    n += ch();
                     move();
                 }
             }
-    
+
             x();
             if (ch() === Separator) {
-                n += ch;
+                n += ch();
                 x();
             }
-    
-            if (isVariableStart(c())) throw new Error(`Unexpected character (${ch}) at index ${idx}`);
-            
-            return n ? literalExp(Number(n)) : null;
+
+            if (n) {
+                if (isVariableStart(c())) throw new Error(`Unexpected character (${ch}) at index ${idx}`);
+
+                return literalExp(Number(n));
+            }
+
+            return null;
         }
-    
+
         function tryString() {
         }
-    
+
         return tryNumeric() || tryString();
     }
-    
+
+    function tryVariable() {
+        let v = '';
+
+        if (isVariableStart(c())) {
+            while (stillVariable(c())) {
+                v += ch();
+                move();
+            }
+        }
+
+        return v ? variableExp(v) : null;
+    }
+
     function tryUnary() {
         const u = unary.find(u => eq(exp, idx, u));
 
@@ -71,19 +100,6 @@ export default function tokenize(exp: string): Expression {
         }
 
         return null;
-    }
-
-    function tryVariable() {
-        let v = '';
-
-        if (isVariableStart(c())) {
-            while (stillVariable(c())) {
-                v += ch;
-                move();
-            }
-        }
-
-        return v ? variableExp(v) : null;
     }
 
     function tryBinary(e: Expression) {
@@ -107,11 +123,7 @@ export default function tokenize(exp: string): Expression {
     function getCall(e: Expression) {
         move();
 
-        const args = [];
-        do {
-            args.push(getExp());
-            skip();
-        } while (eq(exp, idx, ','));
+        const args = getGroup();
 
         to(')');
 
@@ -119,11 +131,26 @@ export default function tokenize(exp: string): Expression {
     }
 
     function tryGroup(e: Expression) {
+        if (ch() === ',')
+            return [e].concat(getGroup());
+
+        return null;
+    }
+
+    function getGroup() {
+        const exps: Expression[] = [];
+
+        do {
+            exps.push(getExp());
+            skip();
+        } while (eq(exp, idx, ','));
+
+        return exps;
     }
 
     function tryLambda(e: Expression) {
     }
-    
+
     function tryKnown(e: Expression) {
         if (e.type === ExpressionType.Literal) {
             const le = <VariableExpression>e;
@@ -146,7 +173,7 @@ export default function tokenize(exp: string): Expression {
 
         if (!eq(exp, idx, c))
             throw new Error(`Expected ${c} at index ${idx}, found ${exp[idx]}`);
-        
+
         move(c.length);
     }
 

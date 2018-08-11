@@ -1,5 +1,5 @@
 export const enum ExpressionType {
-    Literal, Unary, Variable, Member, Binary, Call, Group, Lambda
+    Literal, Variable, Unary, Member, Binary, Call, Group, Lambda
 }
 
 export interface Expression {
@@ -10,13 +10,13 @@ export interface LiteralExpression extends Expression {
     value
 }
 
+export interface VariableExpression extends Expression {
+    name: string;
+}
+
 export interface UnaryExpression extends Expression {
     operator: string;
     target: Expression;
-}
-
-export interface VariableExpression extends Expression {
-    name: string;
 }
 
 export interface MemberExpression extends Expression {
