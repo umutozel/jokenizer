@@ -6,9 +6,11 @@ import {
 export default function tokenize(exp: string): Expression {
     if (!exp) return null;
 
-    let idx = 0, c: number, ch: string;
-    curr();
+    let idx = 0;
 
+    function c() { return exp.charCodeAt(idx); }
+    function ch() { return exp.charAt(idx); }
+    
     function getExp() {
         skip();
 
@@ -19,14 +21,15 @@ export default function tokenize(exp: string): Expression {
         
         if (!exp) return null;
         
-        if (ch === '.') return propertyExp(e, getExp());
+        if (ch() === '.') return propertyExp(e, getExp());
 
         skip();
 
-        tryCall();
+        const call = tryCall(e);
+        if (call) return call;
 
-        const op = binary.find(b => eq(exp, idx, b));
-        if (op) return getBinary(e, op);
+        const bin = tryBinary(e);
+        return bin;
 
         if (e.type === ExpressionType.Literal) {
             const le = <VariableExpression>e;
@@ -40,19 +43,19 @@ export default function tokenize(exp: string): Expression {
         let n = '';
 
         function x() {
-            while (isNumber(c)) {
+            while (isNumber(c())) {
                 n += ch;
                 move();
             }
         }
 
         x();
-        if (ch === separator) {
+        if (ch() === separator) {
             n += ch;
             x();
         }
 
-        if (isVariableStart(c)) throw new Error(`Unexpected character (${ch}) at index ${idx}`);
+        if (isVariableStart(c())) throw new Error(`Unexpected character (${ch}) at index ${idx}`);
         
         return n ? literalExp(Number(n)) : null;
     }
@@ -74,8 +77,8 @@ export default function tokenize(exp: string): Expression {
     function tryVar() {
         let v = '';
 
-        if (isVariableStart(c)) {
-            while (stillVariable(c)) {
+        if (isVariableStart(c())) {
+            while (stillVariable(c())) {
                 v += ch;
                 move();
             }
@@ -84,11 +87,12 @@ export default function tokenize(exp: string): Expression {
         return v ? variableExp(v) : null;
     }
 
-    function getBinary(left: Expression, op: string) {
+    function tryBinary(e: Expression, pre?: string) {
+        const op = binary.find(b => eq(exp, idx, b));
     }
 
     function tryCall(e: Expression) {
-        return ch === '(' ? getCall(e) : e;
+        return ch() === '(' ? getCall(e) : e;
     }
 
     function getCall(e: Expression) {
@@ -105,26 +109,12 @@ export default function tokenize(exp: string): Expression {
         return callExp(e, args);
     }
 
-    function code() {
-        return exp.charCodeAt(idx);
-    }
-
-    function char() {
-        return exp[idx]
-    }
-
-    function curr() {
-        c = code();
-        ch = char();
-    }
-
     function move(count: number = 1) {
         idx += count;
-        curr();
     }
 
     function skip() {
-        while (isSpace(c)) move();
+        while (isSpace(c())) move();
     }
 
     function to(c: string) {
@@ -161,7 +151,7 @@ function stillVariable(c: Number) {
 }
 
 const separator = (function () {
-    let n = 1.1;
+    const n = 1.1;
     return n.toLocaleString().substr(1, 1);
 })();
 
