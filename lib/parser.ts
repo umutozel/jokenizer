@@ -1,6 +1,8 @@
 import {
-    ExpressionType, Expression, LiteralExpression, PropertyExpression,
-    UnaryExpression, BinaryExpression, CallExpression, VariableExpression
+    ExpressionType, Expression, 
+    LiteralExpression, UnaryExpression, VariableExpression,
+    BinaryExpression, MemberExpression, CallExpression, 
+    GroupExpression, LambdaExpression
 } from './types';
 
 export default function tokenize(exp: string): Expression {
@@ -14,47 +16,52 @@ export default function tokenize(exp: string): Expression {
     function getExp() {
         skip();
 
-        const e: Expression = tryNumeric()
-            || tryString()
+        const e = tryLiteral()
             || tryUnary()
-            || tryVar();
+            || tryVariable();
         
         if (!exp) return null;
         
         skip();
 
         return tryBinary(e)
-            || tryProperty(e)
+            || tryMember(e)
             || tryCall(e)
             || tryGroup(e)
+            || tryLambda(e)
             || tryKnown(e)
             || exp;
     }
 
-    function tryNumeric() {
-        let n = '';
+    function tryLiteral() {
 
-        function x() {
-            while (isNumber(c())) {
-                n += ch;
-                move();
+        function tryNumeric() {
+            let n = '';
+    
+            function x() {
+                while (isNumber(c())) {
+                    n += ch;
+                    move();
+                }
             }
-        }
-
-        x();
-        if (ch() === Separator) {
-            n += ch;
+    
             x();
+            if (ch() === Separator) {
+                n += ch;
+                x();
+            }
+    
+            if (isVariableStart(c())) throw new Error(`Unexpected character (${ch}) at index ${idx}`);
+            
+            return n ? literalExp(Number(n)) : null;
         }
-
-        if (isVariableStart(c())) throw new Error(`Unexpected character (${ch}) at index ${idx}`);
-        
-        return n ? literalExp(Number(n)) : null;
+    
+        function tryString() {
+        }
+    
+        return tryNumeric() || tryString();
     }
-
-    function tryString() {
-    }
-
+    
     function tryUnary() {
         const u = unary.find(u => eq(exp, idx, u));
 
@@ -66,7 +73,7 @@ export default function tokenize(exp: string): Expression {
         return null;
     }
 
-    function tryVar() {
+    function tryVariable() {
         let v = '';
 
         if (isVariableStart(c())) {
@@ -89,15 +96,12 @@ export default function tokenize(exp: string): Expression {
         return null;
     }
 
-    function tryProperty(e: Expression) {
-        if (ch() === '.') return propertyExp(e, getExp());
+    function tryMember(e: Expression) {
+        if (ch() === '.') return memberExp(e, getExp());
     }
 
     function tryCall(e: Expression) {
         return ch() === '(' ? getCall(e) : e;
-    }
-    
-    function tryGroup(e: Expression) {
     }
 
     function getCall(e: Expression) {
@@ -114,6 +118,12 @@ export default function tokenize(exp: string): Expression {
         return callExp(e, args);
     }
 
+    function tryGroup(e: Expression) {
+    }
+
+    function tryLambda(e: Expression) {
+    }
+    
     function tryKnown(e: Expression) {
         if (e.type === ExpressionType.Literal) {
             const le = <VariableExpression>e;
@@ -193,8 +203,8 @@ function variableExp(name: string) {
     return <VariableExpression>{ type: ExpressionType.Variable, name };
 }
 
-function propertyExp(owner: Expression, property: Expression) {
-    return <PropertyExpression>{ type: ExpressionType.Property, owner, property };
+function memberExp(owner: Expression, member: Expression) {
+    return <MemberExpression>{ type: ExpressionType.Member, owner, member };
 }
 
 function unaryExp(operator: string, target: Expression) {
