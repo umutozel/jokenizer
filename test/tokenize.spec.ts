@@ -60,6 +60,14 @@ describe('Tokenizer', () => {
         expect(te.name).to.equal('IsActive');
     });
 
+    it('should return GroupExpression', () => {
+        const e = tokenize('(a, b)');
+        expect(e.type).to.equal(ExpressionType.Group);
+
+        const ge = <GroupExpression>e;
+        expect(ge.expressions).to.have.length(2);
+    });
+
     it('should return BinaryExpression', () => {
         const e = tokenize('v1 > v2');
         expect(e.type).to.equal(ExpressionType.Binary);
