@@ -8,35 +8,27 @@ export default function tokenize(exp: string): Expression {
 
     let idx = 0;
 
-    function c() { return exp.charCodeAt(idx); }
-    function ch() { return exp.charAt(idx); }
+    const c = () => exp.charCodeAt(idx);
+    const ch = () => exp.charAt(idx);
     
     function getExp() {
         skip();
 
-        let e: Expression = tryNumeric()
+        const e: Expression = tryNumeric()
             || tryString()
             || tryUnary()
             || tryVar();
         
         if (!exp) return null;
         
-        if (ch() === '.') return propertyExp(e, getExp());
-
         skip();
 
-        const call = tryCall(e);
-        if (call) return call;
-
-        const bin = tryBinary(e);
-        return bin;
-
-        if (e.type === ExpressionType.Literal) {
-            const le = <VariableExpression>e;
-            if (le.name in knowns) return literalExp(knowns[le.name]);
-        }
-
-        return exp;
+        return tryBinary(e)
+            || tryProperty(e)
+            || tryCall(e)
+            || tryGroup(e)
+            || tryKnown(e)
+            || exp;
     }
 
     function tryNumeric() {
@@ -50,7 +42,7 @@ export default function tokenize(exp: string): Expression {
         }
 
         x();
-        if (ch() === separator) {
+        if (ch() === Separator) {
             n += ch;
             x();
         }
@@ -87,12 +79,25 @@ export default function tokenize(exp: string): Expression {
         return v ? variableExp(v) : null;
     }
 
-    function tryBinary(e: Expression, pre?: string) {
+    function tryBinary(e: Expression) {
         const op = binary.find(b => eq(exp, idx, b));
+
+        if (op) {
+
+        }
+
+        return null;
+    }
+
+    function tryProperty(e: Expression) {
+        if (ch() === '.') return propertyExp(e, getExp());
     }
 
     function tryCall(e: Expression) {
         return ch() === '(' ? getCall(e) : e;
+    }
+    
+    function tryGroup(e: Expression) {
     }
 
     function getCall(e: Expression) {
@@ -109,6 +114,15 @@ export default function tokenize(exp: string): Expression {
         return callExp(e, args);
     }
 
+    function tryKnown(e: Expression) {
+        if (e.type === ExpressionType.Literal) {
+            const le = <VariableExpression>e;
+            if (le.name in knowns) return literalExp(knowns[le.name]);
+        }
+
+        return null;
+    }
+
     function move(count: number = 1) {
         idx += count;
     }
@@ -119,13 +133,14 @@ export default function tokenize(exp: string): Expression {
 
     function to(c: string) {
         skip();
+
         if (!eq(exp, idx, c))
             throw new Error(`Expected ${c} at index ${idx}, found ${exp[idx]}`);
         
         move(c.length);
     }
 
-    return <any>getExp();
+    return getExp();
 }
 
 function isSpace(c: Number) {
@@ -150,7 +165,7 @@ function stillVariable(c: Number) {
     return isVariableStart(c) || isNumber(c);
 }
 
-const separator = (function () {
+const Separator = (function () {
     const n = 1.1;
     return n.toLocaleString().substr(1, 1);
 })();

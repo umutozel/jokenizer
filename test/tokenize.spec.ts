@@ -1,4 +1,6 @@
-import tokenize, { ExpressionType } from '../lib/index';
+import tokenize from '../lib/parser';
+import { ExpressionType } from '../lib/types';
+
 import { expect } from 'chai';
 import 'mocha';
 
