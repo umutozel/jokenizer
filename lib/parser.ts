@@ -90,12 +90,16 @@ export default function tokenize(exp: string): Expression {
                     c = nxt();
                     
                     switch (c) {
+                        case 'b': s += '\b'; break;
+                        case 'f': s += '\f'; break;
                         case 'n': s += '\n'; break;
                         case 'r': s += '\r'; break;
                         case 't': s += '\t'; break;
-                        case 'b': s += '\b'; break;
-                        case 'f': s += '\f'; break;
                         case 'v': s += '\x0B'; break;
+                        case '0': s += '\0'; break;
+                        case "'": s += "'"; break;
+                        case '"': s += '"'; break;
+                        case '\\' : s += '\\'; break;
                     }
                 } else {
                     s += c;

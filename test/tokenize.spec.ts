@@ -25,11 +25,11 @@ describe('Tokenize function', () => {
     });
 
     it('should return string LiteralExpression', () => {
-        const e = tokenize('"42"');
+        const e = tokenize('"4\'2"');
         expect(e.type).to.equal(ExpressionType.Literal);
 
         const le = <LiteralExpression>e;
-        expect(le.value).to.equal('42');
+        expect(le.value).to.equal("4'2");
     });
 
     it('should return VariableExpression', () => {
