@@ -244,7 +244,6 @@ export default function tokenize(exp: string): Expression {
 
     function getCall(e: Expression) {
         const args = getGroup();
-        to(')');
 
         return callExp(e, args);
     }
