@@ -3,6 +3,9 @@ export const enum ExpressionType {
     Variable = 'V', 
     Unary = 'U', 
     Group = 'G', 
+    Assign = 'A',
+    Object = 'O',
+    Array = 'AR',
     Member = 'M', 
     Binary = 'B', 
     Call = 'C', 
@@ -29,6 +32,18 @@ export interface UnaryExpression extends Expression {
 
 export interface GroupExpression extends Expression {
     expressions: Expression[];
+}
+
+export interface AssignExpression extends VariableExpression {
+    right: Expression;
+}
+
+export interface ObjectExpression extends Expression {
+    members: VariableExpression[];
+}
+
+export interface ArrayExpression extends Expression {
+    items: Expression[];
 }
 
 export interface MemberExpression extends Expression {

@@ -1,6 +1,7 @@
 import {
     ExpressionType, Expression,
-    LiteralExpression, VariableExpression, UnaryExpression, GroupExpression,
+    LiteralExpression, VariableExpression, UnaryExpression, 
+    GroupExpression, AssignExpression, ObjectExpression, ArrayExpression,
     BinaryExpression, MemberExpression, CallExpression,
     FuncExpression, TernaryExpression
 } from './types';
@@ -15,13 +16,15 @@ export default function tokenize(exp: string): Expression {
     const cd = () => exp.charCodeAt(idx);
     const ch = () => exp.charAt(idx);
 
-    function getExp() {
+    function getExp(): Expression {
         skip();
 
         let e = tryLiteral()
             || tryVariable()
             || tryUnary()
-            || tryGroup();
+            || tryGroup()
+            || tryObject()
+            || tryArray();
 
         if (!e) return e;
 
@@ -132,18 +135,58 @@ export default function tokenize(exp: string): Expression {
     }
 
     function getGroup() {
-        const exps: Expression[] = [];
-
+        const es: Expression[] = [];
         do {
-            exps.push(getExp());
-            skip();
+            es.push(getExp());
         } while (get(','));
 
         to(')');
 
-        return exps;
+        return es;
     }
 
+    function tryObject() {
+        if (get('{')) {
+            const es: VariableExpression[] = [];
+            do {
+                const e = getExp();
+                if (e.type !== ExpressionType.Variable)
+                    throw new Error(`Invalid assignment at ${idx}`);
+
+                const ve = <VariableExpression>e;
+                if (get(':')) {
+                    skip();
+                    
+                    es.push(assignExp(ve, getExp()));
+                }
+                else {
+                    es.push(ve);
+                }
+            } while (get(','));
+            
+            to('}');
+
+            return objectExp(es);
+        }
+
+        return null;
+    }
+
+    function tryArray() {
+        if (get('[')) {
+            const es: Expression[] = [];
+            do {
+                es.push(getExp());
+            } while (get(','));
+            
+            to(']');
+
+            return arrayExp(es);
+        }
+
+        return null;
+    }
+    
     function tryBinary(e: Expression) {
         const op = binary.find(b => get(b));
 
@@ -217,7 +260,7 @@ export default function tokenize(exp: string): Expression {
     }
 
     function tryTernary(e: Expression) {
-        if (ch() !== '?') return null;
+        if (!get('?')) return null;
 
         const whenTrue = getExp();
         to(':');
@@ -254,7 +297,7 @@ export default function tokenize(exp: string): Expression {
     }
 
     function skip() {
-        while (isSpace(cd())) move();
+        while (isSpace(cd(), ch())) move();
     }
 
     function to(c: string) {
@@ -307,8 +350,8 @@ function eq(source: string, idx: number, target: string) {
     return source.substr(idx, target.length) === target;
 }
 
-function isSpace(c: Number) {
-    return c === 32 || c === 9;
+function isSpace(cd: Number, ch: string) {
+    return cd === 32 || cd === 9 || ch === '\n';
 }
 
 function isNumber(c: Number) {
@@ -348,6 +391,18 @@ function unaryExp(operator: string, target: Expression) {
 
 function groupExp(expressions: Expression[]) {
     return <GroupExpression>{ type: ExpressionType.Group, expressions };
+}
+
+function assignExp(member: VariableExpression, right: Expression) {
+    return <AssignExpression>{ type: ExpressionType.Assign, name: member.name, right };
+}
+
+function objectExp(members: VariableExpression[]) {
+    return <ObjectExpression>{ type: ExpressionType.Object, members };
+}
+
+function arrayExp(items: Expression[]) {
+    return <ArrayExpression>{ type: ExpressionType.Array, items };
 }
 
 function binaryExp(operator: string, left: Expression, right: Expression) {
