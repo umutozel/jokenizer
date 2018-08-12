@@ -259,7 +259,7 @@ export default function tokenize(exp: string): Expression {
     }
 
     function tryKnown(e: Expression) {
-        if (e.type === ExpressionType.Literal) {
+        if (e.type === ExpressionType.Variable) {
             const le = <VariableExpression>e;
             if (le.name in knowns) return literalExp(knowns[le.name]);
         }

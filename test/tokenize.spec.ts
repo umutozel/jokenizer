@@ -41,6 +41,26 @@ describe('Tokenizer simple call to check ExpressionType', () => {
         expect(le.value).to.equal("4'2");
     });
 
+    it('should return LiteralExpression for known variables', () => {
+        const e1 = tokenize('true');
+        expect(e1.type).to.equal(ExpressionType.Literal);
+
+        const le1 = <LiteralExpression>e1;
+        expect(le1.value).to.equal(true);
+
+        const e2 = tokenize('false');
+        expect(e2.type).to.equal(ExpressionType.Literal);
+
+        const le2 = <LiteralExpression>e2;
+        expect(le2.value).to.equal(false);
+
+        const e3 = tokenize('null');
+        expect(e3.type).to.equal(ExpressionType.Literal);
+
+        const le3 = <LiteralExpression>e3;
+        expect(le3.value).to.equal(null);
+    });
+
     it('should return VariableExpression', () => {
         const e = tokenize('Name');
         expect(e.type).to.equal(ExpressionType.Variable);
