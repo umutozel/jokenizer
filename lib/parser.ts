@@ -128,19 +128,21 @@ export default function tokenize(exp: string): Expression {
     }
 
     function tryGroup() {
-        if (get('('))
-            return groupExp(getGroup());
-
-        return null;
+        return get('(') ? groupExp(getGroup()) : null;
     }
 
     function getGroup() {
-        const es: Expression[] = [];
+        const es = getSequence();
+        to(')');
+
+        return es;
+    }
+
+    function getSequence(prev?: Expression) {
+        const es: Expression[] = e ? [e] : [];
         do {
             es.push(getExp());
         } while (get(','));
-
-        to(')');
 
         return es;
     }
@@ -309,9 +311,14 @@ export default function tokenize(exp: string): Expression {
         move(c.length);
     }
 
-    const e = getExp();
+    let e = getExp();
 
     skip();
+
+    if (get(',')) {
+        e = groupExp(getSequence(e));
+        skip();
+    }
 
     if (idx < len) throw new Error(err);
 

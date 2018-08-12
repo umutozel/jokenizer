@@ -70,6 +70,14 @@ describe('Tokenizer', () => {
         expect(ge.expressions).to.have.length(2);
     });
 
+    it('should return GroupExpression for sequence', () => {
+        const e = tokenize('a, b');
+        expect(e.type).to.equal(ExpressionType.Group);
+
+        const ge = <GroupExpression>e;
+        expect(ge.expressions).to.have.length(2);
+    });
+
     it('should return ObjectExpression', () => {
         const e = tokenize('{ a: v1, b }');
         expect(e.type).to.equal(ExpressionType.Object);
