@@ -9,8 +9,7 @@ import {
 export default function tokenize(exp: string): Expression {
     if (!exp) return null;
 
-    const len = exp.length,
-        err = 'Cannot parse expression.';
+    const len = exp.length;
     let idx = 0;
 
     const cd = () => exp.charCodeAt(idx);
@@ -135,11 +134,11 @@ export default function tokenize(exp: string): Expression {
     }
 
     function trySequence(prev: Expression) {
-        return get(',') ? groupExp(getSequence(e)) : null;
+        return get(',') ? groupExp(getSequence(prev)) : null;
     }
 
     function getSequence(prev?: Expression) {
-        const es: Expression[] = e ? [e] : [];
+        const es: Expression[] = prev ? [prev] : [];
         do {
             es.push(getExp());
         } while (get(','));
@@ -300,12 +299,12 @@ export default function tokenize(exp: string): Expression {
         move(c.length);
     }
 
-    let e = getExp();
-    e = e ? trySequence(e) || e : e;
+    let _e = getExp();
+    _e = _e ? trySequence(_e) || _e : _e;
 
-    if (idx < len) throw new Error(err);
+    if (idx < len) throw new Error(`Cannot parse expression, stuck at ${idx}`);
 
-    return e;
+    return _e;
 }
 
 const unary = ['-', '!', '~', '+'],
