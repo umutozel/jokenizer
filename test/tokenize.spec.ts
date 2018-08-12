@@ -1,17 +1,17 @@
 import tokenize from '../lib/parser';
 import {
     ExpressionType, Expression,
-    LiteralExpression, VariableExpression, UnaryExpression, 
+    LiteralExpression, VariableExpression, UnaryExpression,
     GroupExpression, AssignExpression, ObjectExpression, ArrayExpression,
-    BinaryExpression, MemberExpression, CallExpression,
-    FuncExpression, TernaryExpression
+    BinaryExpression, MemberExpression, FuncExpression,
+    CallExpression, TernaryExpression
 } from '../lib/types';
 
 
-import { expect, should } from 'chai';
+import { expect } from 'chai';
 import 'mocha';
 
-describe('Tokenizer', () => {
+describe('Tokenizer simple call to check ExpressionType', () => {
 
     it('should return null', () => {
         const exp = tokenize('');
@@ -120,8 +120,29 @@ describe('Tokenizer', () => {
         expect(re.name).to.equal('v2');
     });
 
-    it('should return FuncExpression', () => {
+    it('should return FuncExpression for lambda', () => {
         const e = tokenize('(a, b) => a < b');
+        expect(e.type).to.equal(ExpressionType.Func);
+
+        const fe = <FuncExpression>e;
+        expect(fe.parameters.length).to.equal(2);
+        expect(fe.parameters).to.have.members(['a', 'b']);
+        expect(fe.body.type).to.equal(ExpressionType.Binary);
+
+        const be = <BinaryExpression>fe.body;
+        expect(be.operator).to.equal('<');
+
+        expect(be.left.type).to.equal(ExpressionType.Variable);
+        const le = <VariableExpression>be.left;
+        expect(le.name).to.equal('a');
+
+        expect(be.right.type).to.equal(ExpressionType.Variable);
+        const re = <VariableExpression>be.right;
+        expect(re.name).to.equal('b');
+    });
+
+    it('should return FuncExpression for function', () => {
+        const e = tokenize('function(a, b) { return a < b; }');
         expect(e.type).to.equal(ExpressionType.Func);
 
         const fe = <FuncExpression>e;

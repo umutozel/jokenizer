@@ -8,8 +8,8 @@ export const enum ExpressionType {
     Array = 'AR',
     Member = 'M', 
     Binary = 'B', 
-    Call = 'C', 
     Func = 'F', 
+    Call = 'C', 
     Ternary = 'T'
 }
 
@@ -57,14 +57,14 @@ export interface BinaryExpression extends Expression {
     right: Expression;
 }
 
-export interface CallExpression extends Expression {
-    callee: Expression;
-    args: Expression[];
-}
-
 export interface FuncExpression extends Expression {
     parameters: string[];
     body: Expression;
+}
+
+export interface CallExpression extends Expression {
+    callee: Expression;
+    args: Expression[];
 }
 
 export interface TernaryExpression extends Expression {

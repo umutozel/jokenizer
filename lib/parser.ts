@@ -2,8 +2,8 @@ import {
     ExpressionType, Expression,
     LiteralExpression, VariableExpression, UnaryExpression,
     GroupExpression, AssignExpression, ObjectExpression, ArrayExpression,
-    BinaryExpression, MemberExpression, CallExpression,
-    FuncExpression, TernaryExpression
+    BinaryExpression, MemberExpression, FuncExpression,
+    CallExpression, TernaryExpression
 } from './types';
 
 export default function tokenize(exp: string): Expression {
@@ -32,8 +32,8 @@ export default function tokenize(exp: string): Expression {
 
         return tryBinary(e)
             || tryMember(e)
-            || tryCall(e)
             || tryFunc(e)
+            || tryCall(e)
             || tryTernary(e)
             || tryKnown(e)
             || e;
@@ -202,24 +202,15 @@ export default function tokenize(exp: string): Expression {
         return get('.') ? memberExp(e, getExp()) : null;
     }
 
-    function tryCall(e: Expression) {
-        return get('(') ? getCall(e) : null;
-    }
-
-    function getCall(e: Expression) {
-        const args = getGroup();
-        to(')');
-
-        return callExp(e, args);
-    }
-
     function tryFunc(e: Expression) {
         if (get('=>'))
             return funcExp(getParameters(e), getExp());
 
         if (e.type === ExpressionType.Variable && (<VariableExpression>e).name === 'function') {
-            const parameters = getParameters(e);
+            const parameters = getParameters(getExp());
             to('{');
+            skip();
+            get('return');
 
             const body = getExp();
             get(';');
@@ -232,25 +223,31 @@ export default function tokenize(exp: string): Expression {
     }
 
     function getParameters(e: Expression) {
-        let parameters: string[];
-
         if (e.type === ExpressionType.Group) {
             const ge = <GroupExpression>e;
-            parameters = ge.expressions.map(x => {
+            return ge.expressions.map(x => {
                 if (x.type !== ExpressionType.Variable)
                     throw new Error(`Invalid parameter at ${idx}`);
 
                 return (<VariableExpression>x).name;
             });
         }
-        else {
-            if (e.type !== ExpressionType.Variable)
-                throw new Error(`Invalid parameter at ${idx}`);
 
-            parameters = [(<VariableExpression>e).name];
-        }
+        if (e.type !== ExpressionType.Variable)
+            throw new Error(`Invalid parameter at ${idx}`);
 
-        return parameters;
+        return [(<VariableExpression>e).name];
+    }
+
+    function tryCall(e: Expression) {
+        return get('(') ? getCall(e) : null;
+    }
+
+    function getCall(e: Expression) {
+        const args = getGroup();
+        to(')');
+
+        return callExp(e, args);
     }
 
     function tryTernary(e: Expression) {
@@ -344,7 +341,7 @@ function eq(source: string, idx: number, target: string) {
 }
 
 function isSpace(cd: Number, ch: string) {
-    return cd === 32 || cd === 9 || ch === '\n';
+    return cd === 32 || cd === 9 || cd === 160 || ch === '\n';
 }
 
 function isNumber(c: Number) {
@@ -406,12 +403,12 @@ function memberExp(owner: Expression, member: Expression) {
     return <MemberExpression>{ type: ExpressionType.Member, owner, member };
 }
 
-function callExp(callee: Expression, args: Expression[]) {
-    return <CallExpression>{ type: ExpressionType.Call, callee, args };
-}
-
 function funcExp(parameters: string[], body: Expression) {
     return <FuncExpression>{ type: ExpressionType.Func, parameters, body };
+}
+
+function callExp(callee: Expression, args: Expression[]) {
+    return <CallExpression>{ type: ExpressionType.Call, callee, args };
 }
 
 function ternaryExp(predicate: Expression, whenTrue: Expression, whenFalse: Expression) {
