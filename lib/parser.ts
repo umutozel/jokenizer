@@ -192,7 +192,7 @@ export default function tokenize(exp: string): Expression {
         const right = getExp();
 
         if (right.type === ExpressionType.Binary)
-            return fixPredence(e, op, <BinaryExpression>right);
+            return fixPrecedence(e, op, <BinaryExpression>right);
 
         return binaryExp(op, e, right);
     }
@@ -357,7 +357,7 @@ function stillVariable(c: Number) {
     return isVariableStart(c) || isNumber(c);
 }
 
-function fixPredence(left: Expression, leftOp: string, right: BinaryExpression) {
+function fixPrecedence(left: Expression, leftOp: string, right: BinaryExpression) {
     const p1 = precedence[leftOp];
     const p2 = precedence[right.operator];
 
