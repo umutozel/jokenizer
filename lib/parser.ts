@@ -1,6 +1,6 @@
 import {
     ExpressionType, Expression,
-    LiteralExpression, VariableExpression, UnaryExpression, 
+    LiteralExpression, VariableExpression, UnaryExpression,
     GroupExpression, AssignExpression, ObjectExpression, ArrayExpression,
     BinaryExpression, MemberExpression, CallExpression,
     FuncExpression, TernaryExpression
@@ -75,7 +75,6 @@ export default function tokenize(exp: string): Expression {
             let s = '';
 
             while (c = nxt()) {
-
                 if (c === q) {
                     move();
                     return literalExp(s);
@@ -110,10 +109,10 @@ export default function tokenize(exp: string): Expression {
         let v = '';
 
         if (isVariableStart(cd())) {
-            while (stillVariable(cd())) {
+            do {
                 v += ch();
                 move();
-            }
+            } while (stillVariable(cd()));
         }
 
         return v ? variableExp(v) : null;
@@ -121,10 +120,7 @@ export default function tokenize(exp: string): Expression {
 
     function tryUnary() {
         const u = unary.find(u => get(u));
-
-        if (u) return unaryExp(u, getExp());
-
-        return null;
+        return u ? unaryExp(u, getExp()) : null;
     }
 
     function tryGroup() {
@@ -138,6 +134,10 @@ export default function tokenize(exp: string): Expression {
         return es;
     }
 
+    function trySequence(prev: Expression) {
+        return get(',') ? groupExp(getSequence(e)) : null;
+    }
+
     function getSequence(prev?: Expression) {
         const es: Expression[] = e ? [e] : [];
         do {
@@ -148,66 +148,58 @@ export default function tokenize(exp: string): Expression {
     }
 
     function tryObject() {
-        if (get('{')) {
-            const es: VariableExpression[] = [];
-            do {
-                const e = getExp();
-                if (e.type !== ExpressionType.Variable)
-                    throw new Error(`Invalid assignment at ${idx}`);
+        if (!get('{')) return null;
 
-                const ve = <VariableExpression>e;
-                if (get(':')) {
-                    skip();
-                    
-                    es.push(assignExp(ve, getExp()));
-                }
-                else {
-                    es.push(ve);
-                }
-            } while (get(','));
-            
-            to('}');
+        const es: VariableExpression[] = [];
+        do {
+            const e = getExp();
+            if (e.type !== ExpressionType.Variable)
+                throw new Error(`Invalid assignment at ${idx}`);
 
-            return objectExp(es);
-        }
+            const ve = <VariableExpression>e;
+            if (get(':')) {
+                skip();
 
-        return null;
+                es.push(assignExp(ve, getExp()));
+            }
+            else {
+                es.push(ve);
+            }
+        } while (get(','));
+
+        to('}');
+
+        return objectExp(es);
     }
 
     function tryArray() {
-        if (get('[')) {
-            const es: Expression[] = [];
-            do {
-                es.push(getExp());
-            } while (get(','));
-            
-            to(']');
+        if (!get('[')) return null;
 
-            return arrayExp(es);
-        }
+        const es: Expression[] = [];
+        do {
+            es.push(getExp());
+        } while (get(','));
 
-        return null;
+        to(']');
+
+        return arrayExp(es);
     }
-    
+
     function tryBinary(e: Expression) {
         const op = binary.find(b => get(b));
 
-        if (op) {
-            const right = getExp();
+        if (!op) return null;
 
-            if (right.type === ExpressionType.Binary)
-                return fixPredence(e, op, <BinaryExpression>right);
+        const right = getExp();
 
-            return binaryExp(op, e, right);
-        }
+        if (right.type === ExpressionType.Binary)
+            return fixPredence(e, op, <BinaryExpression>right);
 
-        return null;
+        return binaryExp(op, e, right);
     }
 
     function tryMember(e: Expression) {
-        if (ch() === '.') return memberExp(e, getExp());
-
-        return null;
+        return get('.') ? memberExp(e, getExp()) : null;
     }
 
     function tryCall(e: Expression) {
@@ -312,13 +304,7 @@ export default function tokenize(exp: string): Expression {
     }
 
     let e = getExp();
-
-    skip();
-
-    if (get(',')) {
-        e = groupExp(getSequence(e));
-        skip();
-    }
+    e = e ? trySequence(e) || e : e;
 
     if (idx < len) throw new Error(err);
 
@@ -379,7 +365,7 @@ function fixPredence(left: Expression, leftOp: string, right: BinaryExpression) 
     const p1 = precedence[leftOp];
     const p2 = precedence[right.operator];
 
-    return p2 < p1 
+    return p2 < p1
         ? binaryExp(right.operator, binaryExp(leftOp, left, right.left), right.right)
         : binaryExp(leftOp, left, right);
 }

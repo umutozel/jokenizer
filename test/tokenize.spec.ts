@@ -71,7 +71,7 @@ describe('Tokenizer', () => {
     });
 
     it('should return GroupExpression for sequence', () => {
-        const e = tokenize('a, b');
+        const e = tokenize('a, b ');
         expect(e.type).to.equal(ExpressionType.Group);
 
         const ge = <GroupExpression>e;
