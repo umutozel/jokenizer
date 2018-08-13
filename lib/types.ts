@@ -48,7 +48,7 @@ export interface ArrayExpression extends Expression {
 
 export interface MemberExpression extends Expression {
     owner: Expression;
-    member: Expression;
+    member: VariableExpression;
 }
 
 export interface BinaryExpression extends Expression {
