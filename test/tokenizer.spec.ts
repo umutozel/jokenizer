@@ -1,6 +1,6 @@
-import tokenize from '../lib/parser';
+import tokenize from '../lib/tokenizer';
 import {
-    ExpressionType, Expression,
+    ExpressionType,
     LiteralExpression, VariableExpression, UnaryExpression,
     GroupExpression, AssignExpression, ObjectExpression, ArrayExpression,
     BinaryExpression, MemberExpression, FuncExpression,
@@ -87,6 +87,14 @@ describe('Tokenizer simple call to check ExpressionType', () => {
 
         const ge = e as GroupExpression;
         expect(ge.expressions).to.have.length(2);
+        expect(ge.expressions[0].type).to.equal(ExpressionType.Variable);
+        expect(ge.expressions[1].type).to.equal(ExpressionType.Variable);
+
+        const v1 = ge.expressions[0] as VariableExpression;
+        expect(v1.name).to.equal('a');
+
+        const v2 = ge.expressions[1] as VariableExpression;
+        expect(v2.name).to.equal('b');
     });
 
     it('should return GroupExpression for sequence', () => {
@@ -95,6 +103,14 @@ describe('Tokenizer simple call to check ExpressionType', () => {
 
         const ge = e as GroupExpression;
         expect(ge.expressions).to.have.length(2);
+        expect(ge.expressions[0].type).to.equal(ExpressionType.Variable);
+        expect(ge.expressions[1].type).to.equal(ExpressionType.Variable);
+
+        const v1 = ge.expressions[0] as VariableExpression;
+        expect(v1.name).to.equal('a');
+
+        const v2 = ge.expressions[1] as VariableExpression;
+        expect(v2.name).to.equal('b');
     });
 
     it('should return ObjectExpression', () => {
@@ -158,7 +174,7 @@ describe('Tokenizer simple call to check ExpressionType', () => {
 
         const ve = me.owner as VariableExpression;
         expect(ve.name).to.equal('Company');
-        
+
         const ve2 = me.member as VariableExpression;
         expect(ve2.name).to.equal('Name');
     });
@@ -214,7 +230,7 @@ describe('Tokenizer simple call to check ExpressionType', () => {
         expect(ce.args.length).to.equal(2);
         expect(ce.args[0].type).to.equal(ExpressionType.Literal);
         expect(ce.args[1].type).to.equal(ExpressionType.Variable);
-        
+
         const le = ce.args[0] as LiteralExpression;
         expect(le.value).to.equal(42);
 
