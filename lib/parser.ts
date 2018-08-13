@@ -155,7 +155,7 @@ export default function tokenize(exp: string): Expression {
             if (e.type !== ExpressionType.Variable)
                 throw new Error(`Invalid assignment at ${idx}`);
 
-            const ve = <VariableExpression>e;
+            const ve = e as VariableExpression;
             if (get(':')) {
                 skip();
 
@@ -192,7 +192,7 @@ export default function tokenize(exp: string): Expression {
         const right = getExp();
 
         if (right.type === ExpressionType.Binary)
-            return fixPrecedence(e, op, <BinaryExpression>right);
+            return fixPrecedence(e, op, right as BinaryExpression);
 
         return binaryExp(op, e, right);
     }
@@ -205,7 +205,7 @@ export default function tokenize(exp: string): Expression {
         if (get('=>'))
             return funcExp(getParameters(e), getExp());
 
-        if (e.type === ExpressionType.Variable && (<VariableExpression>e).name === 'function') {
+        if (e.type === ExpressionType.Variable && (e as VariableExpression).name === 'function') {
             const parameters = getParameters(getExp());
             to('{');
             skip();
@@ -223,19 +223,19 @@ export default function tokenize(exp: string): Expression {
 
     function getParameters(e: Expression) {
         if (e.type === ExpressionType.Group) {
-            const ge = <GroupExpression>e;
+            const ge = e as GroupExpression;
             return ge.expressions.map(x => {
                 if (x.type !== ExpressionType.Variable)
                     throw new Error(`Invalid parameter at ${idx}`);
 
-                return (<VariableExpression>x).name;
+                return (x as VariableExpression).name;
             });
         }
 
         if (e.type !== ExpressionType.Variable)
             throw new Error(`Invalid parameter at ${idx}`);
 
-        return [(<VariableExpression>e).name];
+        return [(e as VariableExpression).name];
     }
 
     function tryCall(e: Expression) {
@@ -260,7 +260,7 @@ export default function tokenize(exp: string): Expression {
 
     function tryKnown(e: Expression) {
         if (e.type === ExpressionType.Variable) {
-            const le = <VariableExpression>e;
+            const le = e as VariableExpression;
             if (le.name in knowns) return literalExp(knowns[le.name]);
         }
 
@@ -366,49 +366,49 @@ function fixPrecedence(left: Expression, leftOp: string, right: BinaryExpression
 }
 
 function literalExp(value) {
-    return <LiteralExpression>{ type: ExpressionType.Literal, value };
+    return { type: ExpressionType.Literal, value } as LiteralExpression;
 }
 
 function variableExp(name: string) {
-    return <VariableExpression>{ type: ExpressionType.Variable, name };
+    return { type: ExpressionType.Variable, name } as VariableExpression;
 }
 
 function unaryExp(operator: string, target: Expression) {
-    return <UnaryExpression>{ type: ExpressionType.Unary, target, operator }
+    return { type: ExpressionType.Unary, target, operator } as UnaryExpression;
 }
 
 function groupExp(expressions: Expression[]) {
-    return <GroupExpression>{ type: ExpressionType.Group, expressions };
+    return { type: ExpressionType.Group, expressions } as GroupExpression;
 }
 
 function assignExp(member: VariableExpression, right: Expression) {
-    return <AssignExpression>{ type: ExpressionType.Assign, name: member.name, right };
+    return { type: ExpressionType.Assign, name: member.name, right } as AssignExpression;
 }
 
 function objectExp(members: VariableExpression[]) {
-    return <ObjectExpression>{ type: ExpressionType.Object, members };
+    return { type: ExpressionType.Object, members } as ObjectExpression;
 }
 
 function arrayExp(items: Expression[]) {
-    return <ArrayExpression>{ type: ExpressionType.Array, items };
+    return { type: ExpressionType.Array, items } as ArrayExpression;
 }
 
 function binaryExp(operator: string, left: Expression, right: Expression) {
-    return <BinaryExpression>{ type: ExpressionType.Binary, operator, left, right };
+    return { type: ExpressionType.Binary, operator, left, right } as BinaryExpression;
 }
 
 function memberExp(owner: Expression, member: Expression) {
-    return <MemberExpression>{ type: ExpressionType.Member, owner, member };
+    return { type: ExpressionType.Member, owner, member } as MemberExpression;
 }
 
 function funcExp(parameters: string[], body: Expression) {
-    return <FuncExpression>{ type: ExpressionType.Func, parameters, body };
+    return { type: ExpressionType.Func, parameters, body } as FuncExpression;
 }
 
 function callExp(callee: Expression, args: Expression[]) {
-    return <CallExpression>{ type: ExpressionType.Call, callee, args };
+    return { type: ExpressionType.Call, callee, args } as CallExpression;
 }
 
 function ternaryExp(predicate: Expression, whenTrue: Expression, whenFalse: Expression) {
-    return <TernaryExpression>{ type: ExpressionType.Ternary, predicate, whenTrue, whenFalse };
+    return { type: ExpressionType.Ternary, predicate, whenTrue, whenFalse } as TernaryExpression;
 }
