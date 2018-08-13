@@ -198,7 +198,12 @@ export default function tokenize(exp: string): Expression {
     }
 
     function tryMember(e: Expression) {
-        return get('.') ? memberExp(e, getExp()) : null;
+        if (!get('.')) return null;
+
+        skip();
+        const v = tryVariable();
+        if (v == null) throw new Error(`Invalid member identifier at ${idx}`);
+        return memberExp(e, v);
     }
 
     function tryFunc(e: Expression) {
@@ -306,7 +311,7 @@ export default function tokenize(exp: string): Expression {
     return _e;
 }
 
-const unary = ['-', '!', '~', '+'],
+const unary = ['-', '+', '!', '~'],
     binary = [
         '&&', '||',
         '|', '^', '&',
@@ -397,7 +402,7 @@ function binaryExp(operator: string, left: Expression, right: Expression) {
     return { type: ExpressionType.Binary, operator, left, right } as BinaryExpression;
 }
 
-function memberExp(owner: Expression, member: Expression) {
+function memberExp(owner: Expression, member: VariableExpression) {
     return { type: ExpressionType.Member, owner, member } as MemberExpression;
 }
 
