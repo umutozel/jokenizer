@@ -1,4 +1,4 @@
-import tokenize from '../lib/tokenizer';
+import { tokenize } from '../lib/tokenizer';
 import { evaluate } from '../lib/evaluator';
 
 import { expect } from 'chai';
