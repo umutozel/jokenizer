@@ -4,7 +4,10 @@
   "description": "Tokenize javascript expressions.",
   "main": "dist/index.js",
   "keywords": [
-    "expression", "parser", "tokenize", "eval"
+    "expression",
+    "parser",
+    "tokenize",
+    "eval"
   ],
   "files": [
     "dist",
