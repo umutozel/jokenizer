@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Tokenize javascript expressions.",
   "main": "dist/index.js",
+  "keywords": [
+    "expression", "parser", "tokenize", "eval"
+  ],
   "files": [
     "dist",
     "readme.md"
