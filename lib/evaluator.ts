@@ -18,10 +18,8 @@ export function evaluate(exp: Expression, scopes: any[] = []) {
         return evalUnary(e.operator, evaluate(e.target, scopes));
     }
 
-    if (exp.type === ExpressionType.Group) {
-        const e = exp as GroupExpression;
-        return e.expressions.map(e => evaluate(e, scopes));
-    }
+    if (exp.type === ExpressionType.Group)
+        return (exp as GroupExpression).expressions.map(e => evaluate(e, scopes));
 
     if (exp.type === ExpressionType.Assign)
         return setMember({}, exp as AssignExpression, scopes);
@@ -32,10 +30,8 @@ export function evaluate(exp: Expression, scopes: any[] = []) {
         return o;
     }
 
-    if (exp.type === ExpressionType.Array) {
-        const e = exp as ArrayExpression;
-        return e.items.map(i => evaluate(i, scopes));
-    }
+    if (exp.type === ExpressionType.Array)
+        return (exp as ArrayExpression).items.map(i => evaluate(i, scopes));
 
     if (exp.type === ExpressionType.Binary) {
         const e = exp as BinaryExpression;

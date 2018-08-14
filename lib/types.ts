@@ -14,61 +14,61 @@ export const enum ExpressionType {
 }
 
 export interface Expression {
-    type: ExpressionType;
+    readonly type: ExpressionType;
 }
 
 export interface LiteralExpression extends Expression {
-    value
+    readonly value
 }
 
 export interface VariableExpression extends Expression {
-    name: string;
+    readonly name: string;
 }
 
 export interface UnaryExpression extends Expression {
-    operator: string;
-    target: Expression;
+    readonly operator: string;
+    readonly target: Expression;
 }
 
 export interface GroupExpression extends Expression {
-    expressions: Expression[];
+    readonly expressions: Expression[];
 }
 
 export interface AssignExpression extends VariableExpression {
-    right: Expression;
+    readonly right: Expression;
 }
 
 export interface ObjectExpression extends Expression {
-    members: VariableExpression[];
+    readonly members: VariableExpression[];
 }
 
 export interface ArrayExpression extends Expression {
-    items: Expression[];
+    readonly items: Expression[];
 }
 
 export interface MemberExpression extends Expression {
-    owner: Expression;
-    member: VariableExpression;
+    readonly owner: Expression;
+    readonly member: VariableExpression;
 }
 
 export interface BinaryExpression extends Expression {
-    operator: string;
-    left: Expression;
-    right: Expression;
+    readonly operator: string;
+    readonly left: Expression;
+    readonly right: Expression;
 }
 
 export interface FuncExpression extends Expression {
-    parameters: string[];
-    body: Expression;
+    readonly parameters: string[];
+    readonly body: Expression;
 }
 
 export interface CallExpression extends Expression {
-    callee: Expression;
-    args: Expression[];
+    readonly callee: Expression;
+    readonly args: Expression[];
 }
 
 export interface TernaryExpression extends Expression {
-    predicate: Expression;
-    whenTrue: Expression;
-    whenFalse: Expression;
+    readonly predicate: Expression;
+    readonly whenTrue: Expression;
+    readonly whenFalse: Expression;
 }
