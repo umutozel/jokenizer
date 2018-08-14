@@ -6,7 +6,7 @@ import {
     CallExpression, TernaryExpression
 } from './types';
 
-export default function tokenize(exp: string): Expression {
+export function tokenize(exp: string): Expression {
     if (!exp) return null;
 
     const len = exp.length;
