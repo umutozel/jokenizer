@@ -1,12 +1,5 @@
 import tokenize from '../lib/tokenizer';
 import { evaluate } from '../lib/evaluator';
-import {
-    ExpressionType,
-    LiteralExpression, VariableExpression, UnaryExpression,
-    GroupExpression, AssignExpression, ObjectExpression, ArrayExpression,
-    BinaryExpression, MemberExpression, FuncExpression,
-    CallExpression, TernaryExpression
-} from '../lib/types';
 
 import { expect } from 'chai';
 import 'mocha';
