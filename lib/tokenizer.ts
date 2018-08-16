@@ -18,7 +18,7 @@ export function tokenize(exp: string): Expression {
     function getExp(): Expression {
         skip();
 
-        let e = tryLiteral()
+        let e: Expression = tryLiteral()
             || tryVariable()
             || tryUnary()
             || tryGroup()
@@ -27,15 +27,20 @@ export function tokenize(exp: string): Expression {
 
         if (!e) return e;
 
-        skip();
+        let r: Expression;
+        do {
+            skip();
 
-        return tryBinary(e)
-            || tryMember(e)
-            || tryFunc(e)
-            || tryCall(e)
-            || tryTernary(e)
-            || tryKnown(e)
-            || e;
+            r = e;
+            e = tryBinary(e)
+                || tryMember(e)
+                || tryFunc(e)
+                || tryCall(e)
+                || tryTernary(e)
+                || tryKnown(e);
+        } while (e)
+
+        return r;
     }
 
     function tryLiteral() {
@@ -304,7 +309,7 @@ export function tokenize(exp: string): Expression {
     }
 
     let _e = getExp();
-    _e = _e ? trySequence(_e) || _e : _e;
+    _e = _e ? trySequence(_e) ||  _e : _e;
 
     if (idx < len) throw new Error(`Cannot parse expression, stuck at ${idx}`);
 
