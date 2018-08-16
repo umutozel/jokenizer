@@ -32,12 +32,12 @@ export function tokenize(exp: string): Expression {
             skip();
 
             r = e;
-            e = tryBinary(e)
-                || tryMember(e)
+            e = tryMember(e)
                 || tryFunc(e)
                 || tryCall(e)
+                || tryKnown(e)
                 || tryTernary(e)
-                || tryKnown(e);
+                || tryBinary(e);
         } while (e)
 
         return r;
@@ -132,21 +132,12 @@ export function tokenize(exp: string): Expression {
     }
 
     function getGroup() {
-        const es = getSequence();
-        to(')');
-
-        return es;
-    }
-
-    function trySequence(prev: Expression) {
-        return get(',') ? groupExp(getSequence(prev)) : null;
-    }
-
-    function getSequence(prev?: Expression) {
-        const es: Expression[] = prev ? [prev] : [];
+        const es: Expression[] = [];
         do {
             es.push(getExp());
         } while (get(','));
+
+        to(')');
 
         return es;
     }
@@ -308,12 +299,17 @@ export function tokenize(exp: string): Expression {
         move(c.length);
     }
 
-    let _e = getExp();
-    _e = _e ? trySequence(_e) ||  _e : _e;
-
+    const _exps: Expression[] = [];
+    let _e: Expression;
+    while (idx < len && (_e = getExp())) {
+        _exps.push(_e);
+        skip();
+        get(',');
+    }
+    
     if (idx < len) throw new Error(`Cannot parse expression, stuck at ${idx}`);
 
-    return _e;
+    return _exps.length > 1 ? groupExp(_exps) : _exps[0];
 }
 
 const unary = ['-', '+', '!', '~'],
