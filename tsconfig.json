@@ -5,7 +5,10 @@
     "moduleResolution": "node",
     "sourceMap": true,
     "outDir": "./dist",
-    "declaration": true
+    "declaration": true,
+    "lib": [
+      "es2015"
+    ]
   },
   "compileOnSave": true,
   "include": [

@@ -5,7 +5,6 @@ import {
     BinaryExpression, MemberExpression, FuncExpression,
     CallExpression, TernaryExpression
 } from './types';
-import { find } from './tokenizer';
 
 export function evaluate(exp: Expression, scopes: any[] = []) {
     if (exp.type === ExpressionType.Literal)
@@ -72,7 +71,7 @@ export function evaluate(exp: Expression, scopes: any[] = []) {
 }
 
 function readVar(exp: VariableExpression, scopes: any[]) {
-    const s = find(scopes, s => exp.name in s);
+    const s = scopes.find(s => exp.name in s);
     return s && s[exp.name];
 }
 

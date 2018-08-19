@@ -123,7 +123,7 @@ export function tokenize(exp: string): Expression {
     }
 
     function tryUnary() {
-        const u = find(unary, u => get(u));
+        const u = unary.find(u => get(u));
         return u ? unaryExp(u, getExp()) : null;
     }
 
@@ -181,7 +181,7 @@ export function tokenize(exp: string): Expression {
     }
 
     function tryBinary(e: Expression) {
-        const op = find(binary, b => get(b));
+        const op = binary.find(b => get(b));
 
         if (!op) return null;
 
@@ -417,11 +417,4 @@ function callExp(callee: Expression, args: Expression[]) {
 
 function ternaryExp(predicate: Expression, whenTrue: Expression, whenFalse: Expression) {
     return { type: ExpressionType.Ternary, predicate, whenTrue, whenFalse } as TernaryExpression;
-}
-
-export function find(items: any[], predicate: (i) => boolean) {
-    for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        if (predicate(item)) return item;
-    }
 }
