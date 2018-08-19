@@ -67,6 +67,11 @@ describe('Evaluation tests', () => {
         expect(v).to.deep.equal(true);
     });
 
+    it('should fix precedence', () => {
+        const v = evaluate(tokenize('1 + 2 * 3'));
+        expect(v).to.equal(7);
+    })
+
     it('should evaluate member', () => {
         const v = evaluate(tokenize('Company.Name'), [{ Company: { Name: 'Netflix' } }]);
         expect(v).to.equal('Netflix');

@@ -155,13 +155,37 @@ describe('Tokenizer simple call to check ExpressionType', () => {
         const be = e as BinaryExpression;
         expect(be.operator).to.equal('>');
         expect(be.left.type).to.equal(ExpressionType.Variable);
+        expect(be.right.type).to.equal(ExpressionType.Variable);
 
         const le = be.left as VariableExpression;
         expect(le.name).to.equal('v1');
-        expect(be.right.type).to.equal(ExpressionType.Variable);
 
         const re = be.right as VariableExpression;
         expect(re.name).to.equal('v2');
+    });
+
+    it('should return BinaryExpression with correct precedence', () => {
+        const e = tokenize('1 + 2 * 3');
+        expect(e.type).to.equal(ExpressionType.Binary);
+
+        const be = e as BinaryExpression;
+        expect(be.operator).to.equal('+');
+        expect(be.left.type).to.equal(ExpressionType.Literal);
+        expect(be.right.type).to.equal(ExpressionType.Binary);
+
+        const le = be.left as LiteralExpression;
+        expect(le.value).to.equal(1);
+
+        const re = be.right as BinaryExpression;
+        expect(re.operator).to.equal('*');
+        expect(re.left.type).to.equal(ExpressionType.Literal);
+        expect(re.right.type).to.equal(ExpressionType.Literal);
+
+        const le2 = re.left as LiteralExpression;
+        expect(le2.value).to.equal(2);
+
+        const le3 = re.right as LiteralExpression;
+        expect(le3.value).to.equal(3);
     });
 
     it('should return MemberExpression', () => {
