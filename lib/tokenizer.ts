@@ -137,6 +137,9 @@ export function tokenize(exp: string): Expression {
             es.push(getExp());
         } while (get(','));
 
+        if (!es.length)
+            throw new Error('Expression expected');
+
         to(')');
 
         return es;

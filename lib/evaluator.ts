@@ -18,8 +18,14 @@ export function evaluate(exp: Expression, scopes: any[] = []) {
         return evalUnary(e.operator, evaluate(e.target, scopes));
     }
 
-    if (exp.type === ExpressionType.Group)
-        return (exp as GroupExpression).expressions.map(e => evaluate(e, scopes));
+    if (exp.type === ExpressionType.Group) {
+        const ge = (exp as GroupExpression);
+        
+        if (ge.expressions.length === 1) 
+            return evaluate(ge.expressions[0], scopes);
+
+        return ge.expressions.map(e => evaluate(e, scopes));
+    }
 
     if (exp.type === ExpressionType.Assign)
         return setMember({}, exp as AssignExpression, scopes);
