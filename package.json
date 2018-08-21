@@ -1,6 +1,6 @@
 {
   "name": "jokenizer",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Tokenize javascript expressions.",
   "main": "dist/index.js",
   "keywords": [
