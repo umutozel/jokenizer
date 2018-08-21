@@ -5,7 +5,7 @@
 [![npm version](https://badge.fury.io/js/jokenizer.svg)](https://badge.fury.io/js/jokenizer)
 <a href="https://snyk.io/test/npm/jokenizer"><img src="https://snyk.io/test/npm/jokenizer/badge.svg" alt="Known Vulnerabilities" data-canonical-src="https://snyk.io/test/npm/jokenizer" style="max-width:100%;"></a>
 
-jokenizer is just a simple library to parse JavaScript expression and evaluate them with custom scopes.
+jokenizer is just a simple library to parse JavaScript expressions and evaluate them with custom scopes.
 
 ## Let's parse something
 
