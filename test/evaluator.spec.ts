@@ -3,6 +3,7 @@ import { evaluate } from '../lib/evaluator';
 
 import { expect } from 'chai';
 import 'mocha';
+import { ObjectExpression } from '../lib/types';
 
 describe('Evaluation tests', () => {
 
@@ -62,8 +63,11 @@ describe('Evaluation tests', () => {
     });
 
     it('should evaluate object', () => {
-        const v = evaluate(tokenize('{ a: v1, b }'), [{ v1: 3, b: 5 }]);
+        const t = tokenize('{ a: v1, b }') as ObjectExpression;
+        const v = evaluate(t, [{ v1: 3, b: 5 }]);
         expect(v).to.deep.equal({ a: 3, b: 5 });
+
+        expect(() => evaluate(t.members[0])).throw();
     });
 
     it('should evaluate array', () => {
@@ -72,8 +76,60 @@ describe('Evaluation tests', () => {
     });
 
     it('should evaluate binary', () => {
-        const v = evaluate(tokenize('v1 > v2'), [{ v1: 5, v2: 3 }]);
-        expect(v).to.deep.equal(true);
+        const v1 = evaluate(tokenize('v1 == v2'), [{ v1: 5, v2: 3 }]);
+        expect(v1).to.be.false;
+        
+        const v2 = evaluate(tokenize('v1 != v2'), [{ v1: 5, v2: 3 }]);
+        expect(v2).to.be.true;
+        
+        const v3 = evaluate(tokenize('v1 < v2'), [{ v1: 5, v2: 3 }]);
+        expect(v3).to.be.false;
+        
+        const v4 = evaluate(tokenize('v1 > v2'), [{ v1: 5, v2: 3 }]);
+        expect(v4).to.be.true;
+        
+        const v5 = evaluate(tokenize('v1 <= v2'), [{ v1: 5, v2: 3 }]);
+        expect(v5).to.be.false;
+        
+        const v6 = evaluate(tokenize('v1 >= v2'), [{ v1: 5, v2: 3 }]);
+        expect(v6).to.be.true
+        
+        const v7 = evaluate(tokenize('v1 === v2'), [{ v1: 5, v2: 3 }]);
+        expect(v7).to.be.false;
+
+        const v8 = evaluate(tokenize('v1 !== v2'), [{ v1: 5, v2: 3 }]);
+        expect(v8).to.be.true;
+
+        const v9 = evaluate(tokenize('v1 % v2'), [{ v1: 5, v2: 3 }]);
+        expect(v9).to.equal(2);
+
+        const v10 = evaluate(tokenize('v1 + v2'), [{ v1: 5, v2: 3 }]);
+        expect(v10).to.equal(8);
+
+        const v11 = evaluate(tokenize('v1 - v2'), [{ v1: 5, v2: 3 }]);
+        expect(v11).to.equal(2);
+
+        const v12 = evaluate(tokenize('v1 * v2'), [{ v1: 5, v2: 3 }]);
+        expect(v12).to.equal(15);
+
+        const v13 = evaluate(tokenize('v1 / v2'), [{ v1: 6, v2: 3 }]);
+        expect(v13).to.equal(2);
+
+        const v14 = evaluate(tokenize('v1 ^ v2'), [{ v1: 5, v2: 3 }]);
+        expect(v14).to.equal(6);
+
+        const v15 = evaluate(tokenize('v1 | v2'), [{ v1: 5, v2: 3 }]);
+        expect(v15).to.equal(7);
+
+        const t = tokenize('v1 << v2');
+        const v16 = evaluate(t, [{ v1: 5, v2: 3 }]);
+        expect(v16).to.equal(40);
+
+        const v17 = evaluate(tokenize('v1 >> v2'), [{ v1: 128, v2: 3 }]);
+        expect(v17).to.equal(16);
+
+        const v18 = evaluate(tokenize('v1 >>> v2'), [{ v1: 16, v2: 3 }]);
+        expect(v18).to.equal(2);
     });
 
     it('should fix precedence', () => {
