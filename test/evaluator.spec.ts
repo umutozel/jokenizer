@@ -38,8 +38,17 @@ describe('Evaluation tests', () => {
     });
 
     it('should evaluate unary', () => {
-        const v = evaluate(tokenize('!IsActive'), [{ IsActive: false }]);
-        expect(v).to.equal(true);
+        const v1 = evaluate(tokenize('-Str'), [{ Str: '5' }]);
+        expect(v1).to.equal(-5);
+
+        const v2 = evaluate(tokenize('+Str'), [{ Str: '5' }]);
+        expect(v2).to.equal(5);
+
+        const v3 = evaluate(tokenize('!IsActive'), [{ IsActive: false }]);
+        expect(v3).to.equal(true);
+
+        const v4 = evaluate(tokenize('~index'), [{ index: -1 }]);
+        expect(v4).to.equal(0);
     });
 
     it('should evaluate group', () => {

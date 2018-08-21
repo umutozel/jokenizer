@@ -27,9 +27,6 @@ export function evaluate(exp: Expression, scopes: any[] = []) {
         return ge.expressions.map(e => evaluate(e, scopes));
     }
 
-    if (exp.type === ExpressionType.Assign)
-        return setMember({}, exp as AssignExpression, scopes);
-
     if (exp.type === ExpressionType.Object) {
         const e = exp as ObjectExpression, o = {};
         e.members.forEach(m => setMember(o, m, scopes));
