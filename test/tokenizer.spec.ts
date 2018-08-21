@@ -95,10 +95,12 @@ describe('Tokenizer simple call to check ExpressionType', () => {
 
         const v2 = ge.expressions[1] as VariableExpression;
         expect(v2.name).to.equal('b');
+
+        expect(() => tokenize('()')).to.throw;
     });
 
     it('should return GroupExpression for sequence', () => {
-        const e = tokenize('a, b ');
+        const e = tokenize('a, b');
         expect(e.type).to.equal(ExpressionType.Group);
 
         const ge = e as GroupExpression;

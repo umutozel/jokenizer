@@ -3,7 +3,7 @@ import { evaluate } from '../lib/evaluator';
 
 import { expect } from 'chai';
 import 'mocha';
-import { ObjectExpression } from '../lib/types';
+import { ObjectExpression, UnaryExpression, BinaryExpression } from '../lib/types';
 
 describe('Evaluation tests', () => {
 
@@ -48,13 +48,20 @@ describe('Evaluation tests', () => {
         const v3 = evaluate(tokenize('!IsActive'), [{ IsActive: false }]);
         expect(v3).to.equal(true);
 
-        const v4 = evaluate(tokenize('~index'), [{ index: -1 }]);
+        const t4 = <UnaryExpression>tokenize('~index');
+        const v4 = evaluate(t4, [{ index: -1 }]);
         expect(v4).to.equal(0);
+
+        const t5 = <UnaryExpression>{ operator: 'None', target: t4.target, type: t4.type };
+        expect(() => evaluate(t5, [{ index: -1 }])).to.throw;
     });
 
     it('should evaluate group', () => {
-        const v = evaluate(tokenize('(a, b)'), [{ a: 4, b: 2 }]);
-        expect(v).to.deep.equal([4, 2]);
+        const v1 = evaluate(tokenize('(a, b)'), [{ a: 4, b: 2 }]);
+        expect(v1).to.deep.equal([4, 2]);
+
+        const v2 = evaluate(tokenize('(a)'), [{ a: 4 }]);
+        expect(v2).to.equal(4);
     });
 
     it('should evaluate group for sequence', () => {
@@ -67,7 +74,7 @@ describe('Evaluation tests', () => {
         const v = evaluate(t, [{ v1: 3, b: 5 }]);
         expect(v).to.deep.equal({ a: 3, b: 5 });
 
-        expect(() => evaluate(t.members[0])).throw();
+        expect(() => evaluate(t.members[0])).throw;
     });
 
     it('should evaluate array', () => {
@@ -130,6 +137,16 @@ describe('Evaluation tests', () => {
 
         const v18 = evaluate(tokenize('v1 >>> v2'), [{ v1: 16, v2: 3 }]);
         expect(v18).to.equal(2);
+
+        const v19 = evaluate(tokenize('v1 && v2'), [{ v1: true, v2: false }]);
+        expect(v19).to.equal(false);
+
+        const t20 = tokenize('v1 || v2') as BinaryExpression;
+        const v20 = evaluate(t20, [{ v1: false, v2: true }]);
+        expect(v20).to.equal(true);
+
+        const t21 = <BinaryExpression>{ operator: 'None', left: t20.left, right: t20.right, type: t20.type };
+        expect(() => evaluate(t21, [{ v1: false, v2: true }])).to.throw;
     });
 
     it('should fix precedence', () => {

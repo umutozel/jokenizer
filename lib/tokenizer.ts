@@ -134,7 +134,10 @@ export function tokenize(exp: string): Expression {
     function getGroup() {
         const es: Expression[] = [];
         do {
-            es.push(getExp());
+            const e = getExp();
+            if (e) {
+                es.push(e);
+            }
         } while (get(','));
 
         if (!es.length)
