@@ -41,6 +41,12 @@ describe('Tokenizer simple call to check ExpressionType', () => {
         expect(le.value).to.equal("4'2");
 
         expect(() => tokenize('"blow')).to.throw;
+
+        const esc = tokenize('"\\b\\f\\n\\r\\t\\v\\0\\\'\\\"\\\\"');
+        expect(esc.type).to.equal(ExpressionType.Literal);
+
+        const lesc = esc as LiteralExpression;
+        expect(lesc.value).to.equal('\b\f\n\r\t\v\0\'\"\\');
     });
 
     it('should return LiteralExpression for known variables', () => {
