@@ -3,7 +3,7 @@ import {
     ExpressionType,
     LiteralExpression, VariableExpression, UnaryExpression,
     GroupExpression, AssignExpression, ObjectExpression, ArrayExpression,
-    BinaryExpression, MemberExpression, FuncExpression,
+    BinaryExpression, MemberExpression, IndexerExpression, FuncExpression,
     CallExpression, TernaryExpression
 } from '../lib/types';
 
@@ -205,6 +205,21 @@ describe('Tokenizer simple call to check ExpressionType', () => {
 
         const ve2 = me.member as VariableExpression;
         expect(ve2.name).to.equal('Name');
+    });
+
+    it('should return IndexerExpression', () => {
+        const e = tokenize('Company["Name"]');
+        expect(e.type).to.equal(ExpressionType.Indexer);
+
+        const me = e as IndexerExpression;
+        expect(me.owner.type).to.equal(ExpressionType.Variable);
+        expect(me.key.type).to.equal(ExpressionType.Literal);
+
+        const ve = me.owner as VariableExpression;
+        expect(ve.name).to.equal('Company');
+
+        const ve2 = me.key as LiteralExpression;
+        expect(ve2.value).to.equal('Name');
     });
 
     it('should return FuncExpression for lambda', () => {

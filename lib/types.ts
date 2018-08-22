@@ -7,6 +7,7 @@ export const enum ExpressionType {
     Object = 'O',
     Array = 'AR',
     Member = 'M', 
+    Indexer = 'I', 
     Binary = 'B', 
     Func = 'F', 
     Call = 'C', 
@@ -49,6 +50,11 @@ export interface ArrayExpression extends Expression {
 export interface MemberExpression extends Expression {
     readonly owner: Expression;
     readonly member: VariableExpression;
+}
+
+export interface IndexerExpression extends Expression {
+    readonly owner: Expression;
+    readonly key: Expression;
 }
 
 export interface BinaryExpression extends Expression {

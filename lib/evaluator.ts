@@ -2,7 +2,7 @@ import {
     ExpressionType, Expression,
     LiteralExpression, VariableExpression, UnaryExpression,
     GroupExpression, AssignExpression, ObjectExpression, ArrayExpression,
-    BinaryExpression, MemberExpression, FuncExpression,
+    BinaryExpression, MemberExpression, IndexerExpression, FuncExpression,
     CallExpression, TernaryExpression
 } from './types';
 
@@ -45,6 +45,13 @@ export function evaluate(exp: Expression, scopes: any[] = []) {
         const e = exp as MemberExpression;
         const o = evaluate(e.owner, scopes);
         return o != null ? readVar(e.member, [o]) : null;
+    }
+
+    if (exp.type === ExpressionType.Indexer) {
+        const e = exp as IndexerExpression;
+        const o = evaluate(e.owner, scopes);
+        const k = evaluate(e.key, scopes);
+        return o != null ? o[k] : null;
     }
 
     if (exp.type === ExpressionType.Func) {

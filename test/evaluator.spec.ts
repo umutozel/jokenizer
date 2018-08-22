@@ -159,6 +159,14 @@ describe('Evaluation tests', () => {
         expect(v).to.equal('Netflix');
     });
 
+    it('should evaluate indexer', () => {
+        const v1 = evaluate(tokenize('Company["Name"]'), [{ Company: { Name: 'Netflix' } }]);
+        expect(v1).to.equal('Netflix');
+
+        const v2 = evaluate(tokenize('Company[key]'), [{ Company: { Name: 'Netflix' }, key: 'Name' }]);
+        expect(v2).to.equal('Netflix');
+    });
+
     it('should evaluate function for lambda', () => {
         const v = evaluate(tokenize('(a, b) => a < b'));
         expect(v(2, 1)).to.equal(false);

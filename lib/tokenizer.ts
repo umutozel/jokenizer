@@ -2,7 +2,7 @@ import {
     ExpressionType, Expression,
     LiteralExpression, VariableExpression, UnaryExpression,
     GroupExpression, AssignExpression, ObjectExpression, ArrayExpression,
-    BinaryExpression, MemberExpression, FuncExpression,
+    BinaryExpression, MemberExpression, IndexerExpression, FuncExpression,
     CallExpression, TernaryExpression
 } from './types';
 
@@ -33,6 +33,7 @@ export function tokenize(exp: string): Expression {
 
             r = e;
             e = tryMember(e)
+                || tryIndexer(e)
                 || tryFunc(e)
                 || tryCall(e)
                 || tryKnown(e)
@@ -205,7 +206,20 @@ export function tokenize(exp: string): Expression {
         skip();
         const v = tryVariable();
         if (v == null) throw new Error(`Invalid member identifier at ${idx}`);
+
         return memberExp(e, v);
+    }
+
+    function tryIndexer(e: Expression) {
+        if (!get('[')) return null;
+
+        skip();
+        const k = getExp();
+        if (k == null) throw new Error(`Invalid indexer identifier at ${idx}`);
+
+        to(']');
+        
+        return indexerExp(e, k);
     }
 
     function tryFunc(e: Expression) {
@@ -411,6 +425,10 @@ function binaryExp(operator: string, left: Expression, right: Expression) {
 
 function memberExp(owner: Expression, member: VariableExpression) {
     return { type: ExpressionType.Member, owner, member } as MemberExpression;
+}
+
+function indexerExp(owner: Expression, key: Expression) {
+    return { type: ExpressionType.Indexer, owner, key } as IndexerExpression;
 }
 
 function funcExp(parameters: string[], body: Expression) {
