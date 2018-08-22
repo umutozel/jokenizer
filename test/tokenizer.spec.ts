@@ -39,6 +39,8 @@ describe('Tokenizer simple call to check ExpressionType', () => {
 
         const le = e as LiteralExpression;
         expect(le.value).to.equal("4'2");
+
+        expect(() => tokenize('"blow')).to.throw;
     });
 
     it('should return LiteralExpression for known variables', () => {
