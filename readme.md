@@ -115,7 +115,7 @@ f(2, 1)         //  false
 
 ### CallExpression
 ```JavaScript
-evaluate(tokenize('Test(42, a)'), { Test: (a, b) => a * b }, { a: 2 });     //  84
+evaluate(tokenize('test(42, a)'), { test: (a, b) => a * b }, { a: 2 });     //  84
 ```
 
 ### TernaryExpression
