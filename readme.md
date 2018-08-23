@@ -7,9 +7,16 @@
 
 jokenizer is just a simple library to parse JavaScript expressions and evaluate them with custom scopes.
 
-## Let's parse something
+## Installation
+```
+npm i jokenizer
+```
+
+## Let's try it out
 
 ```JavaScript
+import { tokenize, evaluate } from 'jokenizer';
+
 const expression = tokenize('{ a: v1, b }');
 const scope = { v1: 3, b: 5 };
 const value = evaluate(expression, [scope]);
