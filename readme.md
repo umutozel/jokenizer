@@ -45,7 +45,7 @@ value = { "a": 3, "b": 5 }     // evaluated value
 # Supported Expression Types
 
 ### LiteralExpression
-```
+```JavaScript
 evaluate(tokenize('42'));               //  42
 evaluate(tokenize('42.4242'));          //  42.4242
 evaluate(tokenize('"4\'2"'));           //  "4'2"
@@ -55,12 +55,12 @@ evaluate(tokenize('null'));             //  null
 ```
 
 ### VariableExpression
-```
+```JavaScript
 evaluate(tokenize('Name'), { Name: 'Alan' });       //  'Alan'
 ```
 
 ### UnaryExpression
-```
+```JavaScript
 evaluate(tokenize('-Str'), { Str: '5' });               //  -5
 evaluate(tokenize('+Str'), { Str: '5' });               //  5
 evaluate(tokenize('!IsActive'), { IsActive: false });   //  true
@@ -68,24 +68,24 @@ evaluate(tokenize('~index'), { index: -1 });            //  0
 ```
 
 ### GroupExpression
-```
-evaluate(tokenize('(a, b)'), { a: 4, b: 2 });           //  [1, 2]
-evaluate(tokenize('a, b'), { a: 4, b: 2 });             //  [4, 2]
-evaluate(tokenize('(a)'), { a: 4 });                    //  4   - if expression count is 1, returns its value
+```JavaScript
+evaluate(tokenize('(a, b)'), { a: 4, b: 2 });   //  [1, 2]
+evaluate(tokenize('a, b'), { a: 4, b: 2 });     //  [4, 2]
+evaluate(tokenize('(a)'), { a: 4 });            //  4   - if expression count is 1, returns its value
 ```
 
 ### ObjectExpression
-```
+```JavaScript
 evaluate(tokenize('{ a: v1, b }'), { v1: 3, b: 5 });    //  { a: 3, b: 5 }
 ```
 
 ### ArrayExpression
-```
+```JavaScript
 evaluate(tokenize('[ a, 1 ]'), { a: 0 });               //  [0, 1]
 ```
 
 ### BinaryExpression
-```
+```JavaScript
 evaluate(tokenize('v1 <= v2'), { v1: 5, v2: 3 });           //  false
 evaluate(tokenize('v1 % v2'), { v1: 5, v2: 3 });            //  2
 evaluate(tokenize('v1 * v2'), { v1: 5, v2: 3 });            //  15
@@ -94,18 +94,18 @@ evaluate(tokenize('1 + 2 * 3'));                            //  7   - supports o
 ```
 
 ### MemberExpression
-```
+```JavaScript
 evaluate(tokenize('Company.Name'), { Company: { Name: 'Netflix' } });       //  'Netflix'
 ```
 
 ### IndexerExpression
-```
+```JavaScript
 evaluate(tokenize('Company["Name"]'), { Company: { Name: 'Netflix' } });                //  'Netflix'
 evaluate(tokenize('Company[key]'), { Company: { Name: 'Netflix' }, key: 'Name' });      //  'Netflix'
 ```
 
 ### FuncExpression
-```
+```JavaScript
 const f = evaluate(tokenize('(a, b) => a < b'));
 f(2, 1);        //  false
 
@@ -114,12 +114,12 @@ f(2, 1)         //  false
 ```
 
 ### CallExpression
-```
+```JavaScript
 evaluate(tokenize('Test(42, a)'), { Test: (a, b) => a * b }, { a: 2 });     //  84
 ```
 
 ### TernaryExpression
-```
+```JavaScript
 evaluate(tokenize('check ? 42 : 21'), { check: true });     //  42
 ```
 
