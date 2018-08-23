@@ -122,3 +122,6 @@ evaluate(tokenize('Test(42, a)'), { Test: (a, b) => a * b }, { a: 2 });     //  
 ```
 evaluate(tokenize('check ? 42 : 21'), { check: true });     //  42
 ```
+
+# License
+Jokenizer is under the [MIT License](LICENSE).
