@@ -6,6 +6,7 @@
 <a href="https://snyk.io/test/npm/jokenizer"><img src="https://snyk.io/test/npm/jokenizer/badge.svg" alt="Known Vulnerabilities" data-canonical-src="https://snyk.io/test/npm/jokenizer" style="max-width:100%;"></a>
 
 jokenizer is just a simple library to parse JavaScript expressions and evaluate them with custom scopes.
+
 Written completely in TypeScript.
 
 # Installation
