@@ -24,13 +24,13 @@ describe('Evaluation tests', () => {
 
     it('should evaluate reserved constants for known variables', () => {
         const v1 = evaluate(tokenize('true'));
-        expect(v1).to.equal(true);
+        expect(v1).to.be.true;
 
         const v2 = evaluate(tokenize('false'));
-        expect(v2).to.equal(false);
+        expect(v2).to.be.false;
 
         const v3 = evaluate(tokenize('null'));
-        expect(v3).to.equal(null);
+        expect(v3).to.be.null;
     });
 
     it('should evaluate variable', () => {
@@ -46,7 +46,7 @@ describe('Evaluation tests', () => {
         expect(v2).to.equal(5);
 
         const v3 = evaluate(tokenize('!IsActive'), { IsActive: false });
-        expect(v3).to.equal(true);
+        expect(v3).to.be.true;
 
         const t4 = <UnaryExpression>tokenize('~index');
         const v4 = evaluate(t4, { index: -1 });
@@ -139,11 +139,11 @@ describe('Evaluation tests', () => {
         expect(v18).to.equal(2);
 
         const v19 = evaluate(tokenize('v1 && v2'), { v1: true, v2: false });
-        expect(v19).to.equal(false);
+        expect(v19).to.be.false;
 
         const t20 = tokenize('v1 || v2') as BinaryExpression;
         const v20 = evaluate(t20, { v1: false, v2: true });
-        expect(v20).to.equal(true);
+        expect(v20).to.be.true;
 
         const t21 = <BinaryExpression>{ operator: 'None', left: t20.left, right: t20.right, type: t20.type };
         expect(() => evaluate(t21, { v1: false, v2: true })).to.throw;
@@ -169,16 +169,16 @@ describe('Evaluation tests', () => {
 
     it('should evaluate function for lambda', () => {
         const v = evaluate(tokenize('(a, b) => a < b'));
-        expect(v(2, 1)).to.equal(false);
+        expect(v(2, 1)).to.be.false;
     });
 
     it('should evaluate function', () => {
         const v = evaluate(tokenize('function(a, b) { return a < b; }'));
-        expect(v(2, 1)).to.equal(false);
+        expect(v(2, 1)).to.be.false;
     });
 
     it('should evaluate function call', () => {
-        const v = evaluate(tokenize('Test(42, a)'), { Test: (a, b) => a * b }, { a: 2 });
+        const v = evaluate(tokenize('test(42, a)'), { test: (a, b) => a * b }, { a: 2 });
         expect(v).to.equal(84);
     });
 
