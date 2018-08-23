@@ -6,7 +6,11 @@ import {
     CallExpression, TernaryExpression
 } from './types';
 
-export function evaluate(exp: Expression, scopes: any[] = []) {
+export function evaluate(exp: Expression, ...scopes: any[]) {
+    return _evaluate(exp, scopes);
+}
+
+function _evaluate(exp: Expression, scopes: any[]) {
     if (exp.type === ExpressionType.Literal)
         return (exp as LiteralExpression).value;
 
@@ -15,16 +19,16 @@ export function evaluate(exp: Expression, scopes: any[] = []) {
 
     if (exp.type === ExpressionType.Unary) {
         const e = exp as UnaryExpression;
-        return evalUnary(e.operator, evaluate(e.target, scopes));
+        return evalUnary(e.operator, _evaluate(e.target, scopes));
     }
 
     if (exp.type === ExpressionType.Group) {
         const ge = (exp as GroupExpression);
         
         if (ge.expressions.length === 1) 
-            return evaluate(ge.expressions[0], scopes);
+            return _evaluate(ge.expressions[0], scopes);
 
-        return ge.expressions.map(e => evaluate(e, scopes));
+        return ge.expressions.map(e => _evaluate(e, scopes));
     }
 
     if (exp.type === ExpressionType.Object) {
@@ -34,23 +38,23 @@ export function evaluate(exp: Expression, scopes: any[] = []) {
     }
 
     if (exp.type === ExpressionType.Array)
-        return (exp as ArrayExpression).items.map(i => evaluate(i, scopes));
+        return (exp as ArrayExpression).items.map(i => _evaluate(i, scopes));
 
     if (exp.type === ExpressionType.Binary) {
         const e = exp as BinaryExpression;
-        return evalBinary(evaluate(e.left, scopes), e.operator, e.right, scopes);
+        return evalBinary(_evaluate(e.left, scopes), e.operator, e.right, scopes);
     }
 
     if (exp.type === ExpressionType.Member) {
         const e = exp as MemberExpression;
-        const o = evaluate(e.owner, scopes);
+        const o = _evaluate(e.owner, scopes);
         return o != null ? readVar(e.member, [o]) : null;
     }
 
     if (exp.type === ExpressionType.Indexer) {
         const e = exp as IndexerExpression;
-        const o = evaluate(e.owner, scopes);
-        const k = evaluate(e.key, scopes);
+        const o = _evaluate(e.owner, scopes);
+        const k = _evaluate(e.key, scopes);
         return o != null ? o[k] : null;
     }
 
@@ -59,22 +63,22 @@ export function evaluate(exp: Expression, scopes: any[] = []) {
         return (...args) => {
             const s = {};
             e.parameters.forEach((p, i) => s[p] = args[i]);
-            return evaluate(e.body, [s, ...scopes]);
+            return _evaluate(e.body, [s, ...scopes]);
         };
     }
 
     if (exp.type === ExpressionType.Call) {
         const e = exp as CallExpression;
-        const c = evaluate(e.callee, scopes);
-        const a = e.args.map(x => evaluate(x, scopes));
+        const c = _evaluate(e.callee, scopes);
+        const a = e.args.map(x => _evaluate(x, scopes));
         return c.apply(this, a);
     }
 
     if (exp.type === ExpressionType.Ternary) {
         const e = exp as TernaryExpression;
-        return evaluate(e.predicate, scopes)
-            ? evaluate(e.whenTrue, scopes)
-            : evaluate(e.whenFalse, scopes);
+        return _evaluate(e.predicate, scopes)
+            ? _evaluate(e.whenTrue, scopes)
+            : _evaluate(e.whenFalse, scopes);
     }
 
     throw new Error(`Unknown ExpressionType ${exp.type}`);
@@ -97,17 +101,17 @@ function evalUnary(operator: string, value) {
 
 function setMember(object, exp: VariableExpression, scopes: any[]) {
     object[exp.name] = exp.type === ExpressionType.Assign
-        ? evaluate((exp as AssignExpression).right, scopes)
+        ? _evaluate((exp as AssignExpression).right, scopes)
         : readVar(exp, scopes);
 }
 
 function evalBinary(left, operator: string, right: Expression, scopes: any[]) {
     switch (operator) {
-        case '&&': return left && evaluate(right, scopes);
-        case '||': return left || evaluate(right, scopes);
+        case '&&': return left && _evaluate(right, scopes);
+        case '||': return left || _evaluate(right, scopes);
     }
 
-    const r = evaluate(right, scopes)
+    const r = _evaluate(right, scopes)
     switch (operator) {
         case '==': return left == r;
         case '!=': return left != r;
