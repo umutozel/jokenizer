@@ -7,12 +7,12 @@
 
 jokenizer is just a simple library to parse JavaScript expressions and evaluate them with custom scopes.
 
-## Installation
+# Installation
 ```
 npm i jokenizer
 ```
 
-## Let's try it out
+# Let's try it out
 
 ```JavaScript
 import { tokenize, evaluate } from 'jokenizer';
@@ -41,3 +41,31 @@ expression =
 value = { "a": 3, "b": 5 }     // evaluated value
 */
 ```
+
+# Supported Expression Types
+
+### LiteralExpression
+
+### VariableExpression
+
+### UnaryExpression
+
+### GroupExpression
+
+### AssignExpression
+
+### ObjectExpression
+
+### ArrayExpression
+
+### MemberExpression
+
+### IndexerExpression
+
+### BinaryExpression
+
+### FuncExpression
+
+### CallExpression
+
+### TernaryExpression
