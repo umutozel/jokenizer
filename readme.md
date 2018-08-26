@@ -7,6 +7,8 @@
 
 jokenizer is just a simple library to parse JavaScript expressions and evaluate them with custom scopes.
 
+Written completely in TypeScript.
+
 # Installation
 ```
 npm i jokenizer
@@ -19,7 +21,7 @@ import { tokenize, evaluate } from 'jokenizer';
 
 const expression = tokenize('{ a: v1, b }');
 const scope = { v1: 3, b: 5 };
-const value = evaluate(expression, [scope]);
+const value = evaluate(expression, scope);
 
 /*
 expression =
@@ -115,7 +117,7 @@ f(2, 1)         //  false
 
 ### CallExpression
 ```JavaScript
-evaluate(tokenize('Test(42, a)'), { Test: (a, b) => a * b }, { a: 2 });     //  84
+evaluate(tokenize('test(42, a)'), { test: (a, b) => a * b }, { a: 2 });     //  84
 ```
 
 ### TernaryExpression
