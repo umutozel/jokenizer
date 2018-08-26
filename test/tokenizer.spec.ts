@@ -172,6 +172,16 @@ describe('Tokenizer simple call to check ExpressionType', () => {
 
         const re = be.right as VariableExpression;
         expect(re.name).to.equal('v2');
+
+        const ie = tokenize("`don't ${w}, 42`");
+        expect(ie.type).to.equal(ExpressionType.Binary);
+   
+        const bie = ie as BinaryExpression;
+        expect(bie.operator).to.equal('+');
+        expect(bie.left.type).to.equal(ExpressionType.Binary);
+        expect(bie.right.type).to.equal(ExpressionType.Literal);
+
+        expect(() => tokenize("`don't ${w, 42`")).to.throw;
     });
 
     it('should return BinaryExpression with correct precedence', () => {

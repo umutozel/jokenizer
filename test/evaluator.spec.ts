@@ -22,6 +22,11 @@ describe('Evaluation tests', () => {
         expect(v).to.equal("4'2");
     });
 
+    it('should evaluate interpolated string', () => {
+        const v = evaluate(tokenize("`don't ${w}, 42`"), { w: 'panic' });
+        expect(v).to.equal("don't panic, 42");
+    });
+
     it('should evaluate reserved constants for known variables', () => {
         const v1 = evaluate(tokenize('true'));
         expect(v1).to.be.true;
@@ -85,22 +90,22 @@ describe('Evaluation tests', () => {
     it('should evaluate binary', () => {
         const v1 = evaluate(tokenize('v1 == v2'), { v1: 5, v2: 3 });
         expect(v1).to.be.false;
-        
+
         const v2 = evaluate(tokenize('v1 != v2'), { v1: 5, v2: 3 });
         expect(v2).to.be.true;
-        
+
         const v3 = evaluate(tokenize('v1 < v2'), { v1: 5, v2: 3 });
         expect(v3).to.be.false;
-        
+
         const v4 = evaluate(tokenize('v1 > v2'), { v1: 5, v2: 3 });
         expect(v4).to.be.true;
-        
+
         const v5 = evaluate(tokenize('v1 <= v2'), { v1: 5, v2: 3 });
         expect(v5).to.be.false;
-        
+
         const v6 = evaluate(tokenize('v1 >= v2'), { v1: 5, v2: 3 });
         expect(v6).to.be.true
-        
+
         const v7 = evaluate(tokenize('v1 === v2'), { v1: 5, v2: 3 });
         expect(v7).to.be.false;
 

@@ -73,15 +73,27 @@ export function tokenize(exp: string): Expression {
         }
 
         function tryString() {
-            let c = ch();
-            if (c !== '"' && c !== "'") return null;
+            let c = ch(), inter;
+            if (c === '`') {
+                inter = true;
+            }
+            else if (c !== '"' && c !== "'") return null;
 
-            const q = c;
+            const q = c, es: Expression[] = [];
             let s = '';
 
             while (c = nxt()) {
                 if (c === q) {
                     move();
+
+                    if (es.length) {
+                        if (s) {
+                            es.push(literalExp(s));
+                        }
+
+                        return es.reduce((p, n) => binaryExp('+', p, n), literalExp(''))
+                    }
+
                     return literalExp(s);
                 }
 
@@ -98,7 +110,17 @@ export function tokenize(exp: string): Expression {
                         case "'": s += "'"; break;
                         case '"': s += '"'; break;
                         case '\\': s += '\\'; break;
+                        default: s += '\\' + c; break;
                     }
+                } else if (inter && get('${')) {
+                    if (s) {
+                        es.push(literalExp(s));
+                        s = '';
+                    }
+                    es.push(getExp());
+
+                    if (skip() && ch() !== '}') 
+                        throw new Error(`Unterminated template literal at ${idx}`);
                 } else {
                     s += c;
                 }
