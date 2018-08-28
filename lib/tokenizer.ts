@@ -91,7 +91,7 @@ export function tokenize(exp: string): Expression {
                             es.push(literalExp(s));
                         }
 
-                        return es.reduce((p, n) => binaryExp('+', p, n), literalExp(''))
+                        return es.reduce((p, n) => binaryExp('+', p, n), literalExp(''));
                     }
 
                     return literalExp(s);
@@ -107,9 +107,9 @@ export function tokenize(exp: string): Expression {
                         case 't': s += '\t'; break;
                         case 'v': s += '\x0B'; break;
                         case '0': s += '\0'; break;
+                        case '\\': s += '\\'; break;
                         case "'": s += "'"; break;
                         case '"': s += '"'; break;
-                        case '\\': s += '\\'; break;
                         default: s += '\\' + c; break;
                     }
                 } else if (inter && get('${')) {
