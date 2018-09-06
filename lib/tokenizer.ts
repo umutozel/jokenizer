@@ -163,9 +163,6 @@ export function tokenize(exp: string): Expression {
             }
         } while (get(','));
 
-        if (!es.length)
-            throw new Error('Expression expected');
-
         to(')');
 
         return es;
