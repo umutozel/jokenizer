@@ -206,19 +206,6 @@ export function tokenize(exp: string): Expression {
         return arrayExp(es);
     }
 
-    function tryBinary(e: Expression) {
-        const op = binary.find(b => get(b));
-
-        if (!op) return null;
-
-        const right = getExp();
-
-        if (right.type === ExpressionType.Binary)
-            return fixPrecedence(e, op, right as BinaryExpression);
-
-        return binaryExp(op, e, right);
-    }
-
     function tryMember(e: Expression) {
         if (!get('.')) return null;
 
@@ -288,6 +275,15 @@ export function tokenize(exp: string): Expression {
         return callExp(e, args);
     }
 
+    function tryKnown(e: Expression) {
+        if (e.type === ExpressionType.Variable) {
+            const le = e as VariableExpression;
+            if (le.name in knowns) return literalExp(knowns[le.name]);
+        }
+
+        return null;
+    }
+
     function tryTernary(e: Expression) {
         if (!get('?')) return null;
 
@@ -298,13 +294,17 @@ export function tokenize(exp: string): Expression {
         return ternaryExp(e, whenTrue, whenFalse);
     }
 
-    function tryKnown(e: Expression) {
-        if (e.type === ExpressionType.Variable) {
-            const le = e as VariableExpression;
-            if (le.name in knowns) return literalExp(knowns[le.name]);
-        }
+    function tryBinary(e: Expression) {
+        const op = binary.find(b => get(b));
 
-        return null;
+        if (!op) return null;
+
+        const right = getExp();
+
+        if (right.type === ExpressionType.Binary)
+            return fixPrecedence(e, op, right as BinaryExpression);
+
+        return binaryExp(op, e, right);
     }
 
     function get(s: string) {
