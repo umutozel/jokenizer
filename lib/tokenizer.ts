@@ -389,8 +389,8 @@ function eq(source: string, idx: number, target: string) {
     return source.substr(idx, target.length) === target;
 }
 
-function isSpace(cd: Number) {
-    return cd === 32 || cd === 9 || cd === 160 || cd === 10 || cd === 13;
+function isSpace(c: Number) {
+    return c === 32 || c === 9 || c === 160 || c === 10 || c === 13;
 }
 
 function isNumber(c: Number) {
