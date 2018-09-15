@@ -50,7 +50,7 @@ export function tokenize(exp: string): Expression {
             let n = '';
 
             function x() {
-                while (isNumber(cd)) {
+                while (isNumber()) {
                     n += ch;
                     move();
                 }
@@ -63,7 +63,7 @@ export function tokenize(exp: string): Expression {
             }
 
             if (n) {
-                if (isVariableStart(cd))
+                if (isVariableStart())
                     throw new Error(`Unexpected character (${ch}) at index ${idx}`);
 
                 return literalExp(Number(n));
@@ -135,11 +135,11 @@ export function tokenize(exp: string): Expression {
     function tryVariable() {
         let v = '';
 
-        if (isVariableStart(cd)) {
+        if (isVariableStart()) {
             do {
                 v += ch;
                 move();
-            } while (stillVariable(cd));
+            } while (stillVariable());
         }
 
         return v ? variableExp(v) : null;
@@ -307,6 +307,24 @@ export function tokenize(exp: string): Expression {
         return binaryExp(op, e, right);
     }
 
+    function isSpace() {
+        return cd === 32 || cd === 9 || cd === 160 || cd === 10 || cd === 13;
+    }
+
+    function isNumber() {
+        return cd >= 48 && cd <= 57;
+    }
+
+    function isVariableStart() {
+        return (cd === 36) || (cd === 95) || // `$`, `_`
+            (cd >= 65 && cd <= 90) || // A...Z
+            (cd >= 97 && cd <= 122); // a...z
+    }
+    
+    function stillVariable() {
+        return isVariableStart() || isNumber();
+    }
+
     function move(count: number = 1) {
         idx += count;
         cd = exp.charCodeAt(idx)
@@ -314,25 +332,29 @@ export function tokenize(exp: string): Expression {
     }
     
     function get(s: string) {
-        if (eq(exp, idx, s))
+        if (eq(idx, s))
             return !!move(s.length);
 
         return false;
     }
-    
+        
     function skip() {
-        while (isSpace(cd) && move());
+        while (isSpace() && move());
     }
 
+    function eq(idx: number, target: string) {
+        return exp.substr(idx, target.length) === target;
+    }
+    
     function to(c: string) {
         skip();
 
-        if (!eq(exp, idx, c))
+        if (!eq(idx, c))
             throw new Error(`Expected ${c} at index ${idx}, found ${exp[idx]}`);
 
         move(c.length);
     }
-
+    
     const _exps: Expression[] = [];
     let _e: Expression;
     while (idx < len && (_e = getExp())) {
@@ -373,28 +395,6 @@ const unary = ['-', '+', '!', '~'],
         const n = 1.1;
         return n.toLocaleString().substr(1, 1);
     })();
-
-function eq(source: string, idx: number, target: string) {
-    return source.substr(idx, target.length) === target;
-}
-
-function isSpace(c: Number) {
-    return c === 32 || c === 9 || c === 160 || c === 10 || c === 13;
-}
-
-function isNumber(c: Number) {
-    return c >= 48 && c <= 57;
-}
-
-function isVariableStart(c: Number) {
-    return (c === 36) || (c === 95) || // `$`, `_`
-        (c >= 65 && c <= 90) || // A...Z
-        (c >= 97 && c <= 122); // a...z
-}
-
-function stillVariable(c: Number) {
-    return isVariableStart(c) || isNumber(c);
-}
 
 function fixPrecedence(left: Expression, leftOp: string, right: BinaryExpression) {
     const p1 = precedence[leftOp];
