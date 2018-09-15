@@ -307,6 +307,10 @@ export function tokenize(exp: string): Expression {
         return binaryExp(op, e, right);
     }
 
+    function done() {
+        return idx >= len;
+    }
+
     function get(s: string) {
         if (eq(exp, idx, s)) {
             move(s.length);
@@ -318,15 +322,15 @@ export function tokenize(exp: string): Expression {
 
     function move(count: number = 1) {
         idx += count;
+        return !done();
     }
-
+    
     function nxt() {
-        move();
-        return idx < len ? ch() : null;
+        return move() ? ch() : null;
     }
 
     function skip() {
-        while (isSpace(cd(), ch())) move();
+        while (isSpace(cd()) && move());
     }
 
     function to(c: string) {
@@ -383,8 +387,8 @@ function eq(source: string, idx: number, target: string) {
     return source.substr(idx, target.length) === target;
 }
 
-function isSpace(cd: Number, ch: string) {
-    return cd === 32 || cd === 9 || cd === 160 || ch === '\n';
+function isSpace(cd: Number) {
+    return cd === 32 || cd === 9 || cd === 160 || cd === 10 || cd === 13;
 }
 
 function isNumber(c: Number) {
