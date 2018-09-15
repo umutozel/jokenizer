@@ -12,8 +12,8 @@ export function tokenize(exp: string): Expression {
     const len = exp.length;
     let idx = 0;
 
-    const cd = () => exp.charCodeAt(idx);
-    const ch = () => exp.charAt(idx);
+    let cd = exp.charCodeAt(0);
+    let ch = exp[0];
 
     function getExp(): Expression {
         skip();
@@ -50,8 +50,8 @@ export function tokenize(exp: string): Expression {
             let n = '';
 
             function x() {
-                while (isNumber(cd())) {
-                    n += ch();
+                while (isNumber(cd)) {
+                    n += ch;
                     move();
                 }
             }
@@ -63,7 +63,7 @@ export function tokenize(exp: string): Expression {
             }
 
             if (n) {
-                if (isVariableStart(cd()))
+                if (isVariableStart(cd))
                     throw new Error(`Unexpected character (${ch}) at index ${idx}`);
 
                 return literalExp(Number(n));
@@ -73,7 +73,7 @@ export function tokenize(exp: string): Expression {
         }
 
         function tryString() {
-            let c = ch(), inter;
+            let c = ch, inter;
             if (c === '`') {
                 inter = true;
             }
@@ -119,7 +119,7 @@ export function tokenize(exp: string): Expression {
                     }
                     es.push(getExp());
 
-                    if (skip() && ch() !== '}') 
+                    if (skip() && ch !== '}') 
                         throw new Error(`Unterminated template literal at ${idx}`);
                 } else {
                     s += c;
@@ -135,11 +135,11 @@ export function tokenize(exp: string): Expression {
     function tryVariable() {
         let v = '';
 
-        if (isVariableStart(cd())) {
+        if (isVariableStart(cd)) {
             do {
-                v += ch();
+                v += ch;
                 move();
-            } while (stillVariable(cd()));
+            } while (stillVariable(cd));
         }
 
         return v ? variableExp(v) : null;
@@ -322,15 +322,17 @@ export function tokenize(exp: string): Expression {
 
     function move(count: number = 1) {
         idx += count;
+        cd = exp.charCodeAt(idx)
+        ch = exp.charAt(idx);
         return !done();
     }
     
     function nxt() {
-        return move() ? ch() : null;
+        return move() ? ch : null;
     }
 
     function skip() {
-        while (isSpace(cd()) && move());
+        while (isSpace(cd) && move());
     }
 
     function to(c: string) {
