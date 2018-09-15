@@ -82,7 +82,7 @@ export function tokenize(exp: string): Expression {
             const q = c, es: Expression[] = [];
             let s = '';
 
-            while (c = nxt()) {
+            while (c = move()) {
                 if (c === q) {
                     move();
 
@@ -98,7 +98,7 @@ export function tokenize(exp: string): Expression {
                 }
 
                 if (c === '\\') {
-                    c = nxt();
+                    c = move();
                     switch (c) {
                         case 'b': s += '\b'; break;
                         case 'f': s += '\f'; break;
@@ -307,30 +307,19 @@ export function tokenize(exp: string): Expression {
         return binaryExp(op, e, right);
     }
 
-    function done() {
-        return idx >= len;
-    }
-
-    function get(s: string) {
-        if (eq(exp, idx, s)) {
-            move(s.length);
-            return true;
-        }
-
-        return false;
-    }
-
     function move(count: number = 1) {
         idx += count;
         cd = exp.charCodeAt(idx)
-        ch = exp.charAt(idx);
-        return !done();
+        return ch = exp.charAt(idx);
     }
     
-    function nxt() {
-        return move() ? ch : null;
-    }
+    function get(s: string) {
+        if (eq(exp, idx, s))
+            return !!move(s.length);
 
+        return false;
+    }
+    
     function skip() {
         while (isSpace(cd) && move());
     }
@@ -394,7 +383,7 @@ function isSpace(c: Number) {
 }
 
 function isNumber(c: Number) {
-    return (c >= 48 && c <= 57);
+    return c >= 48 && c <= 57;
 }
 
 function isVariableStart(c: Number) {
