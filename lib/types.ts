@@ -8,10 +8,10 @@ export const enum ExpressionType {
     Array = 'AR',
     Member = 'M', 
     Indexer = 'I', 
-    Binary = 'B', 
     Func = 'F', 
     Call = 'C', 
-    Ternary = 'T'
+    Ternary = 'T',
+    Binary = 'B'
 }
 
 export interface Expression {

@@ -124,7 +124,7 @@ describe('Tokenizer simple call to check ExpressionType', () => {
     });
 
     it('should return ObjectExpression', () => {
-        const e = tokenize('{ a: v1, b }');
+        const e = tokenize('{ a : v1, b }');
         expect(e.type).to.equal(ExpressionType.Object);
 
         const oe = e as ObjectExpression;
@@ -156,56 +156,6 @@ describe('Tokenizer simple call to check ExpressionType', () => {
 
         const le = ae.items[1] as LiteralExpression;
         expect(le.value).to.equal(1);
-    });
-
-    it('should return BinaryExpression', () => {
-        const e = tokenize('v1 > v2');
-        expect(e.type).to.equal(ExpressionType.Binary);
-
-        const be = e as BinaryExpression;
-        expect(be.operator).to.equal('>');
-        expect(be.left.type).to.equal(ExpressionType.Variable);
-        expect(be.right.type).to.equal(ExpressionType.Variable);
-
-        const le = be.left as VariableExpression;
-        expect(le.name).to.equal('v1');
-
-        const re = be.right as VariableExpression;
-        expect(re.name).to.equal('v2');
-
-        const ie = tokenize("`don't ${w}, 42`");
-        expect(ie.type).to.equal(ExpressionType.Binary);
-   
-        const bie = ie as BinaryExpression;
-        expect(bie.operator).to.equal('+');
-        expect(bie.left.type).to.equal(ExpressionType.Binary);
-        expect(bie.right.type).to.equal(ExpressionType.Literal);
-
-        expect(() => tokenize("`don't ${w, 42`")).to.throw;
-    });
-
-    it('should return BinaryExpression with correct precedence', () => {
-        const e = tokenize('1 + 2 * 3');
-        expect(e.type).to.equal(ExpressionType.Binary);
-
-        const be = e as BinaryExpression;
-        expect(be.operator).to.equal('+');
-        expect(be.left.type).to.equal(ExpressionType.Literal);
-        expect(be.right.type).to.equal(ExpressionType.Binary);
-
-        const le = be.left as LiteralExpression;
-        expect(le.value).to.equal(1);
-
-        const re = be.right as BinaryExpression;
-        expect(re.operator).to.equal('*');
-        expect(re.left.type).to.equal(ExpressionType.Literal);
-        expect(re.right.type).to.equal(ExpressionType.Literal);
-
-        const le2 = re.left as LiteralExpression;
-        expect(le2.value).to.equal(2);
-
-        const le3 = re.right as LiteralExpression;
-        expect(le3.value).to.equal(3);
     });
 
     it('should return MemberExpression', () => {
@@ -314,5 +264,55 @@ describe('Tokenizer simple call to check ExpressionType', () => {
 
         const wf = te.whenFalse as LiteralExpression;
         expect(wf.value).to.equal(21);
+    });
+
+    it('should return BinaryExpression', () => {
+        const e = tokenize('v1 > v2');
+        expect(e.type).to.equal(ExpressionType.Binary);
+
+        const be = e as BinaryExpression;
+        expect(be.operator).to.equal('>');
+        expect(be.left.type).to.equal(ExpressionType.Variable);
+        expect(be.right.type).to.equal(ExpressionType.Variable);
+
+        const le = be.left as VariableExpression;
+        expect(le.name).to.equal('v1');
+
+        const re = be.right as VariableExpression;
+        expect(re.name).to.equal('v2');
+
+        const ie = tokenize("`don't ${w}, 42`");
+        expect(ie.type).to.equal(ExpressionType.Binary);
+   
+        const bie = ie as BinaryExpression;
+        expect(bie.operator).to.equal('+');
+        expect(bie.left.type).to.equal(ExpressionType.Binary);
+        expect(bie.right.type).to.equal(ExpressionType.Literal);
+
+        expect(() => tokenize("`don't ${w, 42`")).to.throw;
+    });
+
+    it('should return BinaryExpression with correct precedence', () => {
+        const e = tokenize('1 + 2 * 3');
+        expect(e.type).to.equal(ExpressionType.Binary);
+
+        const be = e as BinaryExpression;
+        expect(be.operator).to.equal('+');
+        expect(be.left.type).to.equal(ExpressionType.Literal);
+        expect(be.right.type).to.equal(ExpressionType.Binary);
+
+        const le = be.left as LiteralExpression;
+        expect(le.value).to.equal(1);
+
+        const re = be.right as BinaryExpression;
+        expect(re.operator).to.equal('*');
+        expect(re.left.type).to.equal(ExpressionType.Literal);
+        expect(re.right.type).to.equal(ExpressionType.Literal);
+
+        const le2 = re.left as LiteralExpression;
+        expect(le2.value).to.equal(2);
+
+        const le3 = re.right as LiteralExpression;
+        expect(le3.value).to.equal(3);
     });
 });

@@ -26,6 +26,7 @@ export function tokenize(exp: string): Expression {
             || tryArray();
 
         if (!e) return e;
+        e = tryKnown(e) || e;
 
         let r: Expression;
         do {
@@ -36,7 +37,6 @@ export function tokenize(exp: string): Expression {
                 || tryIndexer(e)
                 || tryFunc(e)
                 || tryCall(e)
-                || tryKnown(e)
                 || tryTernary(e)
                 || tryBinary(e);
         } while (e)
@@ -173,10 +173,12 @@ export function tokenize(exp: string): Expression {
 
         const es: VariableExpression[] = [];
         do {
-            const e = getExp();
-            if (e.type !== ExpressionType.Variable)
+            skip();
+            const e = tryVariable();
+            if (!e)
                 throw new Error(`Invalid assignment at ${idx}`);
 
+            skip();
             const ve = e as VariableExpression;
             if (get(':')) {
                 skip();
@@ -204,6 +206,15 @@ export function tokenize(exp: string): Expression {
         to(']');
 
         return arrayExp(es);
+    }
+
+    function tryKnown(e: Expression) {
+        if (e.type === ExpressionType.Variable) {
+            const le = e as VariableExpression;
+            if (le.name in knowns) return literalExp(knowns[le.name]);
+        }
+
+        return null;
     }
 
     function tryMember(e: Expression) {
@@ -273,15 +284,6 @@ export function tokenize(exp: string): Expression {
         const args = getGroup();
 
         return callExp(e, args);
-    }
-
-    function tryKnown(e: Expression) {
-        if (e.type === ExpressionType.Variable) {
-            const le = e as VariableExpression;
-            if (le.name in knowns) return literalExp(knowns[le.name]);
-        }
-
-        return null;
     }
 
     function tryTernary(e: Expression) {
