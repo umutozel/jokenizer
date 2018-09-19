@@ -87,6 +87,45 @@ describe('Evaluation tests', () => {
         expect(v).to.deep.equal([0, 1]);
     });
 
+    it('should evaluate member', () => {
+        const v1 = evaluate(tokenize('Company.Name'), { Company: { Name: 'Netflix' } });
+        expect(v1).to.equal('Netflix');
+    });
+
+    it('should evaluate indexer', () => {
+        const v1 = evaluate(tokenize('Company["Name"]'), { Company: { Name: 'Netflix' } });
+        expect(v1).to.equal('Netflix');
+
+        const v2 = evaluate(tokenize('Company[key]'), { Company: { Name: 'Netflix' }, key: 'Name' });
+        expect(v2).to.equal('Netflix');
+    });
+
+    it('should evaluate function for lambda', () => {
+        const v = evaluate(tokenize('(a, b) => a < b'));
+        expect(v(2, 1)).to.be.false;
+    });
+
+    it('should evaluate function', () => {
+        const v = evaluate(tokenize('function(a, b) { return a < b; }'));
+        expect(v(2, 1)).to.be.false;
+    });
+
+    it('should evaluate function call', () => {
+        const v1 = evaluate(tokenize('test()'), { test: () => 42 });
+        expect(v1).to.equal(42);
+
+        const v2 = evaluate(tokenize('test(42, a)'), { test: (a, b) => a * b }, { a: 2 });
+        expect(v2).to.equal(84);
+
+        const v3 = evaluate(tokenize('find(i => i > 2)'), [1, 2, 3, 4, 5]);
+        expect(v3).to.equal(3);
+    });
+
+    it('should evaluate ternary', () => {
+        const v = evaluate(tokenize('check ? 42 : 21'), { check: true });
+        expect(v).to.equal(42);
+    });
+
     it('should evaluate binary', () => {
         const v1 = evaluate(tokenize('v1 == v2'), { v1: 5, v2: 3 });
         expect(v1).to.be.false;
@@ -158,43 +197,4 @@ describe('Evaluation tests', () => {
         const v = evaluate(tokenize('1 + 2 * 3'));
         expect(v).to.equal(7);
     })
-
-    it('should evaluate member', () => {
-        const v = evaluate(tokenize('Company.Name'), { Company: { Name: 'Netflix' } });
-        expect(v).to.equal('Netflix');
-    });
-
-    it('should evaluate indexer', () => {
-        const v1 = evaluate(tokenize('Company["Name"]'), { Company: { Name: 'Netflix' } });
-        expect(v1).to.equal('Netflix');
-
-        const v2 = evaluate(tokenize('Company[key]'), { Company: { Name: 'Netflix' }, key: 'Name' });
-        expect(v2).to.equal('Netflix');
-    });
-
-    it('should evaluate function for lambda', () => {
-        const v = evaluate(tokenize('(a, b) => a < b'));
-        expect(v(2, 1)).to.be.false;
-    });
-
-    it('should evaluate function', () => {
-        const v = evaluate(tokenize('function(a, b) { return a < b; }'));
-        expect(v(2, 1)).to.be.false;
-    });
-
-    it('should evaluate function call', () => {
-        const v1 = evaluate(tokenize('test()'), { test: () => 42 });
-        expect(v1).to.equal(42);
-
-        const v2 = evaluate(tokenize('test(42, a)'), { test: (a, b) => a * b }, { a: 2 });
-        expect(v2).to.equal(84);
-
-        const v3 = evaluate(tokenize('find(i => i > 2)'), [1, 2, 3, 4, 5]);
-        expect(v3).to.equal(3);
-    });
-
-    it('should evaluate ternary', () => {
-        const v = evaluate(tokenize('check ? 42 : 21'), { check: true });
-        expect(v).to.equal(42);
-    });
 });
