@@ -130,16 +130,19 @@ describe('Tokenizer simple call to check ExpressionType', () => {
         const oe = e as ObjectExpression;
         expect(oe.members).to.have.length(2);
         expect(oe.members[0].type).to.equal(ExpressionType.Assign);
-        expect(oe.members[1].type).to.equal(ExpressionType.Variable);
+        expect(oe.members[1].type).to.equal(ExpressionType.Assign);
 
-        const ae = oe.members[0] as AssignExpression;
-        expect(ae.right.type).to.equal(ExpressionType.Variable);
+        const ae1 = oe.members[0] as AssignExpression;
+        expect(ae1.right.type).to.equal(ExpressionType.Variable);
 
-        const ve = ae.right as VariableExpression;
-        expect(ve.name).to.equal('v1');
+        const ve1 = ae1.right as VariableExpression;
+        expect(ve1.name).to.equal('v1');
 
-        const ve1 = oe.members[1] as VariableExpression;
-        expect(ve1.name).to.equal('b');
+        const ae2 = oe.members[1] as AssignExpression;
+        expect(ae2.name).to.equal('b');
+
+        const ve2 = ae2.right as VariableExpression;
+        expect(ve2.name).to.equal('b');
     });
 
     it('should return ArrayExpression', () => {

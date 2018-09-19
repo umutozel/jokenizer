@@ -71,7 +71,7 @@ function _evaluate(exp: Expression, scopes: any[]) {
         const e = exp as CallExpression;
         const c = _evaluate(e.callee, scopes);
         const a = e.args.map(x => _evaluate(x, scopes));
-        return c.apply(this, a);
+        return c(...a);
     }
 
     if (exp.type === ExpressionType.Ternary) {
@@ -86,7 +86,8 @@ function _evaluate(exp: Expression, scopes: any[]) {
 
 function readVar(exp: VariableExpression, scopes: any[]) {
     const s = scopes.find(s => exp.name in s);
-    return s && s[exp.name];
+    const v = s && s[exp.name];
+    return (v.bind && typeof v.bind === 'function')  ? v.bind(s) : v;
 }
 
 function evalUnary(operator: string, value) {

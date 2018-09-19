@@ -40,7 +40,7 @@ export interface AssignExpression extends VariableExpression {
 }
 
 export interface ObjectExpression extends Expression {
-    readonly members: VariableExpression[];
+    readonly members: AssignExpression[];
 }
 
 export interface ArrayExpression extends Expression {

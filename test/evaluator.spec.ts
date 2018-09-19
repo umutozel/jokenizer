@@ -188,6 +188,9 @@ describe('Evaluation tests', () => {
 
         const v2 = evaluate(tokenize('test(42, a)'), { test: (a, b) => a * b }, { a: 2 });
         expect(v2).to.equal(84);
+
+        const v3 = evaluate(tokenize('find(i => i > 2)'), [1, 2, 3, 4, 5]);
+        expect(v3).to.equal(3);
     });
 
     it('should evaluate ternary', () => {

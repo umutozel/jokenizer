@@ -132,7 +132,7 @@ export function tokenize(exp: string): Expression {
         return tryNumeric() || tryString();
     }
 
-    function tryVariable() {
+    function getVariableName() {
         let v = '';
 
         if (isVariableStart()) {
@@ -142,6 +142,11 @@ export function tokenize(exp: string): Expression {
             } while (stillVariable());
         }
 
+        return v;
+    }
+
+    function tryVariable() {
+        const v = getVariableName();
         return v ? variableExp(v) : null;
     }
 
@@ -171,22 +176,21 @@ export function tokenize(exp: string): Expression {
     function tryObject() {
         if (!get('{')) return null;
 
-        const es: VariableExpression[] = [];
+        const es: AssignExpression[] = [];
         do {
             skip();
-            const e = tryVariable();
-            if (!e)
+            const v = getVariableName();
+            if (!v)
                 throw new Error(`Invalid assignment at ${idx}`);
 
             skip();
-            const ve = e as VariableExpression;
             if (get(':')) {
                 skip();
 
-                es.push(assignExp(ve, getExp()));
+                es.push(assignExp(v, getExp()));
             }
             else {
-                es.push(ve);
+                es.push(assignExp(v, variableExp(v)));
             }
         } while (get(','));
 
@@ -423,11 +427,11 @@ function groupExp(expressions: Expression[]) {
     return { type: ExpressionType.Group, expressions } as GroupExpression;
 }
 
-function assignExp(member: VariableExpression, right: Expression) {
-    return { type: ExpressionType.Assign, name: member.name, right } as AssignExpression;
+function assignExp(member: string, right: Expression) {
+    return { type: ExpressionType.Assign, name: member, right } as AssignExpression;
 }
 
-function objectExp(members: VariableExpression[]) {
+function objectExp(members: AssignExpression[]) {
     return { type: ExpressionType.Object, members } as ObjectExpression;
 }
 
