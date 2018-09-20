@@ -106,32 +106,49 @@ function setMember(object, exp: VariableExpression, scopes: any[]) {
         : readVar(exp, scopes);
 }
 
-function evalBinary(left, operator: string, right: Expression, scopes: any[]) {
+function evalBinary(l, operator: string, right: Expression, scopes: any[]) {
     switch (operator) {
-        case '&&': return left && _evaluate(right, scopes);
-        case '||': return left || _evaluate(right, scopes);
+        case '&&': return l && _evaluate(right, scopes);
+        case '||': return l || _evaluate(right, scopes);
     }
 
-    const r = _evaluate(right, scopes)
+    let r = _evaluate(right, scopes);
     switch (operator) {
-        case '==': return left == r;
-        case '!=': return left != r;
-        case '<': return left < r;
-        case '>': return left > r;
-        case '<=': return left <= r;
-        case '>=': return left >= r;
-        case '===': return left === r;
-        case '!==': return left !== r;
-        case '%': return left % r;
-        case '+': return left + r;
-        case '-': return left - r;
-        case '*': return left * r;
-        case '/': return left / r;
-        case '^': return left ^ r;
-        case '|': return left | r;
-        case '<<': return left << r;
-        case '>>': return left >> r;
-        case '>>>': return left >>> r;
+        case '%': return l % r;
+        case '+': return l + r;
+        case '-': return l - r;
+        case '*': return l * r;
+        case '/': return l / r;
+        case '^': return l ^ r;
+        case '|': return l | r;
+        case '<<': return l << r;
+        case '>>': return l >> r;
+        case '>>>': return l >>> r;
+    };
+
+    [l, r] = fixForDate(l, r);
+    [r, l] = fixForDate(r, l);
+    
+    switch (operator) {
+        case '==': return l == r;
+        case '!=': return l != r;
+        case '<': return l < r;
+        case '>': return l > r;
+        case '<=': return l <= r;
+        case '>=': return l >= r;
+        case '===': return l === r;
+        case '!==': return l !== r;
         default: throw new Error(`Unknown binary operator ${operator}`);
     }
+}
+
+function fixForDate(v1, v2) {
+    if (Object.prototype.toString.call(v1) === '[object Date]') {
+        v1 = v1.getTime();
+        if (typeof v2 === 'string') {
+            v2 = Date.parse(v2);
+        }
+    }
+    
+    return [v1, v2];
 }

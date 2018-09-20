@@ -191,6 +191,13 @@ describe('Evaluation tests', () => {
 
         const t21 = <BinaryExpression>{ operator: 'None', left: t20.left, right: t20.right, type: t20.type };
         expect(() => evaluate(t21, { v1: false, v2: true })).to.throw;
+
+        var date = new Date();
+        const v22 = evaluate(tokenize('v1 == v2'), { v1: date, v2: date.getTime() });
+        expect(v22).to.be.true;
+
+        const v23 = evaluate(tokenize('v1 == v2'), { v1: date, v2: date.toISOString() });
+        expect(v23).to.be.true;
     });
 
     it('should fix precedence', () => {
