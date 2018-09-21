@@ -118,8 +118,9 @@ export function tokenize(exp: string): Expression {
                         s = '';
                     }
                     es.push(getExp());
+                    skip()
 
-                    if (skip() && ch !== '}') 
+                    if (ch !== '}') 
                         throw new Error(`Unterminated template literal at ${idx}`);
                 } else {
                     s += c;
@@ -361,17 +362,11 @@ export function tokenize(exp: string): Expression {
         move(c.length);
     }
     
-    const _exps: Expression[] = [];
-    let _e: Expression;
-    while (idx < len && (_e = getExp())) {
-        _exps.push(_e);
-        skip();
-        get(',');
-    }
+    var e = getExp();
     
     if (idx < len) throw new Error(`Cannot parse expression, stuck at ${idx}`);
 
-    return _exps.length > 1 ? groupExp(_exps) : _exps[0];
+    return e;
 }
 
 const unary = ['-', '+', '!', '~'],
