@@ -47,8 +47,7 @@ function _evaluate(exp: Expression, scopes: any[]) {
 
     if (exp.type === ExpressionType.Member) {
         const e = exp as MemberExpression;
-        const o = _evaluate(e.owner, scopes);
-        return o != null ? readVar(e.member, [o]) : null;
+        return readVar(e.member, [_evaluate(e.owner, scopes)]);
     }
 
     if (exp.type === ExpressionType.Indexer) {
@@ -85,9 +84,9 @@ function _evaluate(exp: Expression, scopes: any[]) {
 }
 
 function readVar(exp: VariableExpression, scopes: any[]) {
-    const s = scopes.find(s => exp.name in s);
+    const s = scopes.find(s => s && exp.name in s);
     const v = s && s[exp.name];
-    return (v.bind && typeof v.bind === 'function')  ? v.bind(s) : v;
+    return (v && v.bind && typeof v.bind === 'function')  ? v.bind(s) : v;
 }
 
 function evalUnary(operator: string, value) {

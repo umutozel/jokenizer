@@ -58,7 +58,7 @@ describe('Evaluation tests', () => {
         expect(v4).to.equal(0);
 
         const t5 = <UnaryExpression>{ operator: 'None', target: t4.target, type: t4.type };
-        expect(() => evaluate(t5, { index: -1 })).to.throw;
+        expect(() => evaluate(t5, { index: -1 })).to.throw();
     });
 
     it('should evaluate group', () => {
@@ -69,17 +69,12 @@ describe('Evaluation tests', () => {
         expect(v2).to.equal(4);
     });
 
-    it('should evaluate group for sequence', () => {
-        const v = evaluate(tokenize('a, b'), { a: 4, b: 2 });
-        expect(v).to.deep.equal([4, 2]);
-    });
-
     it('should evaluate object', () => {
         const t = tokenize('{ a: v1, b }') as ObjectExpression;
         const v = evaluate(t, { v1: 3, b: 5 });
         expect(v).to.deep.equal({ a: 3, b: 5 });
 
-        expect(() => evaluate(t.members[0])).throw;
+        expect(() => evaluate(t.members[0])).throw();
     });
 
     it('should evaluate array', () => {
@@ -90,6 +85,9 @@ describe('Evaluation tests', () => {
     it('should evaluate member', () => {
         const v1 = evaluate(tokenize('Company.Name'), { Company: { Name: 'Netflix' } });
         expect(v1).to.equal('Netflix');
+
+        const v2 = evaluate(tokenize('Company.Name'), null);
+        expect(v2).to.be.undefined;
     });
 
     it('should evaluate indexer', () => {
@@ -98,6 +96,9 @@ describe('Evaluation tests', () => {
 
         const v2 = evaluate(tokenize('Company[key]'), { Company: { Name: 'Netflix' }, key: 'Name' });
         expect(v2).to.equal('Netflix');
+
+        const v3 = evaluate(tokenize('Company["Name"]'), null);
+        expect(v3).to.be.null;
     });
 
     it('should evaluate function for lambda', () => {
@@ -190,7 +191,7 @@ describe('Evaluation tests', () => {
         expect(v20).to.be.true;
 
         const t21 = <BinaryExpression>{ operator: 'None', left: t20.left, right: t20.right, type: t20.type };
-        expect(() => evaluate(t21, { v1: false, v2: true })).to.throw;
+        expect(() => evaluate(t21, { v1: false, v2: true })).to.throw();
 
         var date = new Date();
         const v22 = evaluate(tokenize('v1 == v2'), { v1: date, v2: date.getTime() });
