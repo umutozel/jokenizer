@@ -17,6 +17,10 @@ describe('Tokenizer simple call to check ExpressionType', () => {
         expect(exp).to.be.null;
     });
 
+    it('should not be able to parse', () => {
+        expect(() => tokenize('#')).to.throw();
+    });
+
     it('should return number LiteralExpression', () => {
         const e = tokenize('42');
         expect(e.type).to.equal(ExpressionType.Literal);
@@ -105,6 +109,8 @@ describe('Tokenizer simple call to check ExpressionType', () => {
 
         const v2 = ge.expressions[1] as VariableExpression;
         expect(v2.name).to.equal('b');
+
+        expect(() => tokenize('(a, b')).to.throw();
     });
 
     it('should return ObjectExpression', () => {
@@ -287,6 +293,9 @@ describe('Tokenizer simple call to check ExpressionType', () => {
 
         const ie2 = tokenize("`don't ${w}`");
         expect(ie2.type).to.equal(ExpressionType.Binary);
+
+        const ie3 = tokenize("`${w} panic`");
+        expect(ie3.type).to.equal(ExpressionType.Binary);
 
         expect(() => tokenize("`don't ${w, 42`")).to.throw();
     });
