@@ -1,17 +1,17 @@
 export const enum ExpressionType {
-    Literal = 'L', 
-    Variable = 'V', 
-    Unary = 'U', 
-    Group = 'G', 
-    Assign = 'A',
-    Object = 'O',
-    Array = 'AR',
-    Member = 'M', 
-    Indexer = 'I', 
-    Func = 'F', 
-    Call = 'C', 
-    Ternary = 'T',
-    Binary = 'B'
+    Literal = 'Literal', 
+    Variable = 'Variable', 
+    Unary = 'Unary', 
+    Group = 'Group', 
+    Assign = 'Assign',
+    Object = 'Object',
+    Array = 'Array',
+    Member = 'Member', 
+    Indexer = 'Indexer', 
+    Func = 'Func', 
+    Call = 'Call', 
+    Ternary = 'Ternary',
+    Binary = 'Binary'
 }
 
 export interface Expression {

@@ -3,7 +3,7 @@ import { evaluate } from '../lib/evaluator';
 
 import { expect } from 'chai';
 import 'mocha';
-import { ObjectExpression, UnaryExpression, BinaryExpression } from '../lib/types';
+import { ObjectExpression, UnaryExpression, BinaryExpression, AssignExpression, LiteralExpression, FuncExpression, GroupExpression, ExpressionType } from '../lib/types';
 
 describe('Evaluation tests', () => {
 
@@ -67,20 +67,10 @@ describe('Evaluation tests', () => {
         expect(() => evaluate(t5, { index: -1 })).to.throw();
     });
 
-    it('should evaluate group', () => {
-        const v1 = evaluate(tokenize('(a, b)'), { a: 4, b: 2 });
-        expect(v1).to.deep.equal([4, 2]);
-
-        const v2 = evaluate(tokenize('(a)'), { a: 4 });
-        expect(v2).to.equal(4);
-    });
-
     it('should evaluate object', () => {
         const t = tokenize('{ a: v1, b }') as ObjectExpression;
         const v = evaluate(t, { v1: 3, b: 5 });
         expect(v).to.deep.equal({ a: 3, b: 5 });
-
-        expect(() => evaluate(t.members[0])).throw();
     });
 
     it('should evaluate array', () => {
@@ -216,5 +206,15 @@ describe('Evaluation tests', () => {
 
         const v2 = evaluate(tokenize('1 * 2 + 3'));
         expect(v2).to.equal(5);
+    })
+
+    it('should throw for invalid token', () => {
+        const objExp = <ObjectExpression>tokenize('{ a: b }');
+        expect(() => evaluate(objExp.members[0])).to.throw();
+
+        const groupExp = <GroupExpression>{ expressions: [], type: ExpressionType.Group };
+        expect(() => evaluate(groupExp)).to.throw();
+
+        expect(() => evaluate(tokenize('a < b => b*2'))).to.throw();
     })
 });

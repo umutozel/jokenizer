@@ -6,7 +6,7 @@ import {
     CallExpression, TernaryExpression
 } from './types';
 
-export function tokenize(exp: string): Expression {
+export function tokenize<T extends Expression = Expression>(exp: string): T {
     if (!exp) return null;
 
     const len = exp.length;
@@ -366,7 +366,7 @@ export function tokenize(exp: string): Expression {
     
     if (idx < len) throw new Error(`Cannot parse expression, stuck at ${idx}`);
 
-    return e;
+    return e as T;
 }
 
 const unary = ['-', '+', '!', '~'],
