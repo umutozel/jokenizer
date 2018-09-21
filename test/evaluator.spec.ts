@@ -208,6 +208,10 @@ describe('Evaluation tests', () => {
         expect(v2).to.equal(5);
     })
 
+    it('should throw for unknown token', () => {
+        expect(() => evaluate(<any>{ type: 'NONE' })).to.throw();
+    })
+
     it('should throw for invalid token', () => {
         const objExp = <ObjectExpression>tokenize('{ a: b }');
         expect(() => evaluate(objExp.members[0])).to.throw();

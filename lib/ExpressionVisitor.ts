@@ -59,13 +59,6 @@ export class ExpressionVisitor {
         };
     }
 
-    protected visitGroup(exp: GroupExpression, scopes: any[]) {
-        if (exp.expressions.length === 1)
-            return this.visit(exp.expressions[0], scopes);
-
-        return exp.expressions.map(e => this.visit(e, scopes));
-    }
-
     protected visitIndexer(exp: IndexerExpression, scopes: any[]) {
         const e = exp as IndexerExpression;
         const o = this.visit(e.owner, scopes);

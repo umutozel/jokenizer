@@ -117,6 +117,7 @@ describe('Tokenizer simple call to check ExpressionType', () => {
         expect(ve2.name).to.equal('b');
 
         expect(() => tokenize('{ 42: v1, b }')).to.throw();
+        expect(() => tokenize('{ b ')).to.throw();
     });
 
     it('should return ArrayExpression', () => {
