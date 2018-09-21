@@ -99,10 +99,8 @@ function evalUnary(operator: string, value) {
     }
 }
 
-function setMember(object, exp: VariableExpression, scopes: any[]) {
-    object[exp.name] = exp.type === ExpressionType.Assign
-        ? _evaluate((exp as AssignExpression).right, scopes)
-        : readVar(exp, scopes);
+function setMember(object, exp: AssignExpression, scopes: any[]) {
+    object[exp.name] = _evaluate(exp.right, scopes)
 }
 
 function evalBinary(l, operator: string, right: Expression, scopes: any[]) {

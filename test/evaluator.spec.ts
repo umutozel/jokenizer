@@ -23,8 +23,14 @@ describe('Evaluation tests', () => {
     });
 
     it('should evaluate interpolated string', () => {
-        const v = evaluate(tokenize("`don't ${w}, 42`"), { w: 'panic' });
-        expect(v).to.equal("don't panic, 42");
+        const v1 = evaluate(tokenize("`don't ${w}, 42`"), { w: 'panic' });
+        expect(v1).to.equal("don't panic, 42");
+
+        const v2 = evaluate(tokenize("`don't ${w}`"), { w: 'panic' });
+        expect(v2).to.equal("don't panic");
+
+        const v3 = evaluate(tokenize("`${w} panic`"), { w: "don't" });
+        expect(v3).to.equal("don't panic");
     });
 
     it('should evaluate reserved constants for known variables', () => {
@@ -123,8 +129,11 @@ describe('Evaluation tests', () => {
     });
 
     it('should evaluate ternary', () => {
-        const v = evaluate(tokenize('check ? 42 : 21'), { check: true });
-        expect(v).to.equal(42);
+        const v1 = evaluate(tokenize('check ? 42 : 21'), { check: true });
+        expect(v1).to.equal(42);
+
+        const v2 = evaluate(tokenize('check ? 42 : 21'), { check: false });
+        expect(v2).to.equal(21);
     });
 
     it('should evaluate binary', () => {
@@ -202,7 +211,10 @@ describe('Evaluation tests', () => {
     });
 
     it('should fix precedence', () => {
-        const v = evaluate(tokenize('1 + 2 * 3'));
-        expect(v).to.equal(7);
+        const v1 = evaluate(tokenize('1 + 2 * 3'));
+        expect(v1).to.equal(7);
+
+        const v2 = evaluate(tokenize('1 * 2 + 3'));
+        expect(v2).to.equal(5);
     })
 });
