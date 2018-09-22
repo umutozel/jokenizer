@@ -2,9 +2,9 @@ import { tokenize } from '../lib/tokenizer';
 import {
     ExpressionType,
     LiteralExpression, VariableExpression, UnaryExpression,
-    GroupExpression, AssignExpression, ObjectExpression, ArrayExpression,
-    BinaryExpression, MemberExpression, IndexerExpression, FuncExpression,
-    CallExpression, TernaryExpression
+    AssignExpression, ObjectExpression, ArrayExpression,
+    BinaryExpression, MemberExpression, IndexerExpression, 
+    FuncExpression, CallExpression, TernaryExpression
 } from '../lib/types';
 
 import { expect } from 'chai';
@@ -95,24 +95,6 @@ describe('Tokenizer simple call to check ExpressionType', () => {
         expect(te.name).to.equal('IsActive');
     });
 
-    it('should return GroupExpression', () => {
-        const e = tokenize('(a, b)');
-        expect(e.type).to.equal(ExpressionType.Group);
-
-        const ge = e as GroupExpression;
-        expect(ge.expressions).to.have.length(2);
-        expect(ge.expressions[0].type).to.equal(ExpressionType.Variable);
-        expect(ge.expressions[1].type).to.equal(ExpressionType.Variable);
-
-        const v1 = ge.expressions[0] as VariableExpression;
-        expect(v1.name).to.equal('a');
-
-        const v2 = ge.expressions[1] as VariableExpression;
-        expect(v2.name).to.equal('b');
-
-        expect(() => tokenize('(a, b')).to.throw();
-    });
-
     it('should return ObjectExpression', () => {
         const e = tokenize('{ a : v1, b }');
         expect(e.type).to.equal(ExpressionType.Object);
@@ -135,6 +117,7 @@ describe('Tokenizer simple call to check ExpressionType', () => {
         expect(ve2.name).to.equal('b');
 
         expect(() => tokenize('{ 42: v1, b }')).to.throw();
+        expect(() => tokenize('{ b ')).to.throw();
     });
 
     it('should return ArrayExpression', () => {
