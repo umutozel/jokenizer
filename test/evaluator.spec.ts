@@ -68,9 +68,9 @@ describe('Evaluation tests', () => {
     });
 
     it('should evaluate object', () => {
-        const t = tokenize('{ a: v1, b }') as ObjectExpression;
-        const v = evaluate(t, { v1: 3, b: 5 });
-        expect(v).to.deep.equal({ a: 3, b: 5 });
+        const t = tokenize('{ a: v1, b.c }') as ObjectExpression;
+        const v = evaluate(t, { v1: 3, b: { c: 5 } });
+        expect(v).to.deep.equal({ a: 3, c: 5 });
     });
 
     it('should evaluate array', () => {
