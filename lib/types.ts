@@ -47,9 +47,8 @@ export interface ArrayExpression extends Expression {
     readonly items: Expression[];
 }
 
-export interface MemberExpression extends Expression {
+export interface MemberExpression extends VariableExpression {
     readonly owner: Expression;
-    readonly member: VariableExpression;
 }
 
 export interface IndexerExpression extends Expression {

@@ -120,7 +120,7 @@ export function tokenize<T extends Expression = Expression>(exp: string): T {
                     es.push(getExp());
                     skip()
 
-                    if (ch !== '}') 
+                    if (ch !== '}')
                         throw new Error(`Unterminated template literal at ${idx}`);
                 } else {
                     s += c;
@@ -145,7 +145,7 @@ export function tokenize<T extends Expression = Expression>(exp: string): T {
 
         return v;
     }
-
+    
     function tryVariable() {
         const v = getVariableName();
         return v ? variableExp(v) : null;
@@ -180,18 +180,21 @@ export function tokenize<T extends Expression = Expression>(exp: string): T {
         const es: AssignExpression[] = [];
         do {
             skip();
-            const v = getVariableName();
-            if (!v)
+            const ve = getExp() as VariableExpression;
+            if (ve.type !== ExpressionType.Variable && ve.type !== ExpressionType.Member)
                 throw new Error(`Invalid assignment at ${idx}`);
 
             skip();
             if (get(':')) {
+                if (ve.type !== ExpressionType.Variable)
+                    throw new Error(`Invalid assignment at ${idx}`);
+
                 skip();
 
-                es.push(assignExp(v, getExp()));
+                es.push(assignExp(ve.name, getExp()));
             }
             else {
-                es.push(assignExp(v, variableExp(v)));
+                es.push(assignExp(ve.name, ve));
             }
         } while (get(','));
 
@@ -226,8 +229,8 @@ export function tokenize<T extends Expression = Expression>(exp: string): T {
         if (!get('.')) return null;
 
         skip();
-        const v = tryVariable();
-        if (v == null) throw new Error(`Invalid member identifier at ${idx}`);
+        const v = getVariableName();
+        if (!v) throw new Error(`Invalid member identifier at ${idx}`);
 
         return memberExp(e, v);
     }
@@ -240,7 +243,7 @@ export function tokenize<T extends Expression = Expression>(exp: string): T {
         if (k == null) throw new Error(`Invalid indexer identifier at ${idx}`);
 
         to(']');
-        
+
         return indexerExp(e, k);
     }
 
@@ -327,7 +330,7 @@ export function tokenize<T extends Expression = Expression>(exp: string): T {
             (cd >= 65 && cd <= 90) || // A...Z
             (cd >= 97 && cd <= 122); // a...z
     }
-    
+
     function stillVariable() {
         return isVariableStart() || isNumber();
     }
@@ -337,14 +340,14 @@ export function tokenize<T extends Expression = Expression>(exp: string): T {
         cd = exp.charCodeAt(idx)
         return ch = exp.charAt(idx);
     }
-    
+
     function get(s: string) {
         if (eq(idx, s))
             return !!move(s.length);
 
         return false;
     }
-        
+
     function skip() {
         while (isSpace() && move());
     }
@@ -352,7 +355,7 @@ export function tokenize<T extends Expression = Expression>(exp: string): T {
     function eq(idx: number, target: string) {
         return exp.substr(idx, target.length) === target;
     }
-    
+
     function to(c: string) {
         skip();
 
@@ -361,9 +364,9 @@ export function tokenize<T extends Expression = Expression>(exp: string): T {
 
         move(c.length);
     }
-    
+
     var e = getExp();
-    
+
     if (idx < len) throw new Error(`Cannot parse expression, stuck at ${idx}`);
 
     return e as T;
@@ -438,8 +441,8 @@ function binaryExp(operator: string, left: Expression, right: Expression) {
     return { type: ExpressionType.Binary, operator, left, right } as BinaryExpression;
 }
 
-function memberExp(owner: Expression, member: VariableExpression) {
-    return { type: ExpressionType.Member, owner, member } as MemberExpression;
+function memberExp(owner: Expression, name: string) {
+    return { type: ExpressionType.Member, owner, name } as MemberExpression;
 }
 
 function indexerExp(owner: Expression, key: Expression) {

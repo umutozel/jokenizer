@@ -2,7 +2,7 @@ import { tokenize } from '../lib/tokenizer';
 import {
     ExpressionType,
     LiteralExpression, VariableExpression, UnaryExpression,
-    AssignExpression, ObjectExpression, ArrayExpression,
+    ObjectExpression, ArrayExpression,
     BinaryExpression, MemberExpression, IndexerExpression, 
     FuncExpression, CallExpression, TernaryExpression
 } from '../lib/types';
@@ -22,35 +22,27 @@ describe('Tokenizer simple call to check ExpressionType', () => {
     });
 
     it('should return number LiteralExpression', () => {
-        const e = tokenize('42');
+        const e = tokenize<LiteralExpression>('42');
         expect(e.type).to.equal(ExpressionType.Literal);
-
-        const le = e as LiteralExpression;
-        expect(le.value).to.equal(42);
+        expect(e.value).to.equal(42);
     });
 
     it('should return decimal number LiteralExpression', () => {
-        const e = tokenize('42.4242');
+        const e = tokenize<LiteralExpression>('42.4242');
         expect(e.type).to.equal(ExpressionType.Literal);
-
-        const le = e as LiteralExpression;
-        expect(le.value).to.equal(42.4242);
+        expect(e.value).to.equal(42.4242);
     });
 
     it('should return string LiteralExpression', () => {
-        const e = tokenize('"4\'2"');
+        const e = tokenize<LiteralExpression>('"4\'2"');
         expect(e.type).to.equal(ExpressionType.Literal);
-
-        const le = e as LiteralExpression;
-        expect(le.value).to.equal("4'2");
+        expect(e.value).to.equal("4'2");
 
         expect(() => tokenize('"blow')).to.throw();
 
-        const esc = tokenize('"\\z\\b\\f\\n\\r\\t\\v\\0\\\'\\\"\\\\"');
+        const esc = tokenize<LiteralExpression>('"\\z\\b\\f\\n\\r\\t\\v\\0\\\'\\\"\\\\"');
         expect(esc.type).to.equal(ExpressionType.Literal);
-
-        const lesc = esc as LiteralExpression;
-        expect(lesc.value).to.equal('\\z\b\f\n\r\t\v\0\'\"\\');
+        expect(esc.value).to.equal('\\z\b\f\n\r\t\v\0\'\"\\');
     });
 
     it('should return LiteralExpression for known variables', () => {
@@ -74,112 +66,85 @@ describe('Tokenizer simple call to check ExpressionType', () => {
     });
 
     it('should return VariableExpression', () => {
-        const e = tokenize('Name');
+        const e = tokenize<VariableExpression>('Name');
         expect(e.type).to.equal(ExpressionType.Variable);
-
-        const ve = e as VariableExpression;
-        expect(ve.name).to.equal('Name');
+        expect(e.name).to.equal('Name');
 
         expect(() => tokenize('42d')).to.throw();
     });
 
     it('should return UnaryExpression', () => {
-        const e = tokenize('!IsActive');
+        const e = tokenize<UnaryExpression>('!IsActive');
         expect(e.type).to.equal(ExpressionType.Unary);
+        expect(e.operator).to.equal('!');
+        expect(e.target.type).to.equal(ExpressionType.Variable);
 
-        const ue = e as UnaryExpression;
-        expect(ue.operator).to.equal('!');
-        expect(ue.target.type).to.equal(ExpressionType.Variable);
-
-        const te = ue.target as VariableExpression;
+        const te = e.target as VariableExpression;
         expect(te.name).to.equal('IsActive');
     });
 
     it('should return ObjectExpression', () => {
-        const e = tokenize('{ a : v1, b }');
+        const e = tokenize<ObjectExpression>('{ a : v1, b.c }');
         expect(e.type).to.equal(ExpressionType.Object);
+        expect(e.members).to.have.length(2);
+        expect(e.members[0].name).to.equal('a');
+        expect(e.members[1].name).to.equal('c');
 
-        const oe = e as ObjectExpression;
-        expect(oe.members).to.have.length(2);
-        expect(oe.members[0].type).to.equal(ExpressionType.Assign);
-        expect(oe.members[1].type).to.equal(ExpressionType.Assign);
-
-        const ae1 = oe.members[0] as AssignExpression;
-        expect(ae1.right.type).to.equal(ExpressionType.Variable);
-
-        const ve1 = ae1.right as VariableExpression;
-        expect(ve1.name).to.equal('v1');
-
-        const ae2 = oe.members[1] as AssignExpression;
-        expect(ae2.name).to.equal('b');
-
-        const ve2 = ae2.right as VariableExpression;
-        expect(ve2.name).to.equal('b');
-
-        expect(() => tokenize('{ 42: v1, b }')).to.throw();
-        expect(() => tokenize('{ b ')).to.throw();
+        expect(() => tokenize('{ a: 4 ')).to.throw();
+        expect(() => tokenize('{ 4: 4 }')).to.throw();
+        expect(() => tokenize('{ a.b: 4 }')).to.throw();
     });
 
     it('should return ArrayExpression', () => {
-        const e = tokenize('[ a, 1 ]');
+        const e = tokenize<ArrayExpression>('[ a, 1 ]');
         expect(e.type).to.equal(ExpressionType.Array);
 
-        const ae = e as ArrayExpression;
-        expect(ae.items).to.have.length(2);
-        expect(ae.items[0].type).to.equal(ExpressionType.Variable);
-        expect(ae.items[1].type).to.equal(ExpressionType.Literal);
+        expect(e.items).to.have.length(2);
+        expect(e.items[0].type).to.equal(ExpressionType.Variable);
+        expect(e.items[1].type).to.equal(ExpressionType.Literal);
 
-        const ve = ae.items[0] as VariableExpression;
+        const ve = e.items[0] as VariableExpression;
         expect(ve.name).to.equal('a');
 
-        const le = ae.items[1] as LiteralExpression;
+        const le = e.items[1] as LiteralExpression;
         expect(le.value).to.equal(1);
     });
 
     it('should return MemberExpression', () => {
-        const e = tokenize('Company.Name');
+        const e = tokenize<MemberExpression>('Company.Name');
         expect(e.type).to.equal(ExpressionType.Member);
+        expect(e.owner.type).to.equal(ExpressionType.Variable);
+        expect(e.name).to.equal('Name');
 
-        const me = e as MemberExpression;
-        expect(me.owner.type).to.equal(ExpressionType.Variable);
-        expect(me.member.type).to.equal(ExpressionType.Variable);
-
-        const ve = me.owner as VariableExpression;
+        const ve = e.owner as VariableExpression;
         expect(ve.name).to.equal('Company');
-
-        const ve2 = me.member as VariableExpression;
-        expect(ve2.name).to.equal('Name');
 
         expect(() => tokenize('Company.5')).to.throw();
     });
 
     it('should return IndexerExpression', () => {
-        const e = tokenize('Company["Name"]');
+        const e = tokenize<IndexerExpression>('Company["Name"]');
         expect(e.type).to.equal(ExpressionType.Indexer);
+        expect(e.owner.type).to.equal(ExpressionType.Variable);
+        expect(e.key.type).to.equal(ExpressionType.Literal);
 
-        const me = e as IndexerExpression;
-        expect(me.owner.type).to.equal(ExpressionType.Variable);
-        expect(me.key.type).to.equal(ExpressionType.Literal);
-
-        const ve = me.owner as VariableExpression;
+        const ve = e.owner as VariableExpression;
         expect(ve.name).to.equal('Company');
 
-        const ve2 = me.key as LiteralExpression;
+        const ve2 = e.key as LiteralExpression;
         expect(ve2.value).to.equal('Name');
 
         expect(() => tokenize('Company[]')).to.throw();
     });
 
     it('should return FuncExpression for lambda', () => {
-        const e = tokenize('(a, b) => a < b');
+        const e = tokenize<FuncExpression>('(a, b) => a < b');
         expect(e.type).to.equal(ExpressionType.Func);
+        expect(e.parameters.length).to.equal(2);
+        expect(e.parameters).to.have.members(['a', 'b']);
+        expect(e.body.type).to.equal(ExpressionType.Binary);
 
-        const fe = e as FuncExpression;
-        expect(fe.parameters.length).to.equal(2);
-        expect(fe.parameters).to.have.members(['a', 'b']);
-        expect(fe.body.type).to.equal(ExpressionType.Binary);
-
-        const be = fe.body as BinaryExpression;
+        const be = e.body as BinaryExpression;
         expect(be.operator).to.equal('<');
         expect(be.left.type).to.equal(ExpressionType.Variable);
         expect(be.right.type).to.equal(ExpressionType.Variable);
@@ -195,15 +160,13 @@ describe('Tokenizer simple call to check ExpressionType', () => {
     });
 
     it('should return FuncExpression for function', () => {
-        const e = tokenize('function(a, b) { return a < b; }');
+        const e = tokenize<FuncExpression>('function(a, b) { return a < b; }');
         expect(e.type).to.equal(ExpressionType.Func);
+        expect(e.parameters.length).to.equal(2);
+        expect(e.parameters).to.have.members(['a', 'b']);
+        expect(e.body.type).to.equal(ExpressionType.Binary);
 
-        const fe = e as FuncExpression;
-        expect(fe.parameters.length).to.equal(2);
-        expect(fe.parameters).to.have.members(['a', 'b']);
-        expect(fe.body.type).to.equal(ExpressionType.Binary);
-
-        const be = fe.body as BinaryExpression;
+        const be = e.body as BinaryExpression;
         expect(be.operator).to.equal('<');
 
         expect(be.left.type).to.equal(ExpressionType.Variable);
@@ -216,54 +179,48 @@ describe('Tokenizer simple call to check ExpressionType', () => {
     });
 
     it('should return CallExpression', () => {
-        const e = tokenize('Test(42, a)');
+        const e = tokenize<CallExpression>('Test(42, a)');
         expect(e.type).to.equal(ExpressionType.Call);
+        expect(e.callee.type).to.equal(ExpressionType.Variable);
+        expect(e.args.length).to.equal(2);
+        expect(e.args[0].type).to.equal(ExpressionType.Literal);
+        expect(e.args[1].type).to.equal(ExpressionType.Variable);
 
-        const ce = e as CallExpression;
-        expect(ce.callee.type).to.equal(ExpressionType.Variable);
-        expect(ce.args.length).to.equal(2);
-        expect(ce.args[0].type).to.equal(ExpressionType.Literal);
-        expect(ce.args[1].type).to.equal(ExpressionType.Variable);
-
-        const le = ce.args[0] as LiteralExpression;
+        const le = e.args[0] as LiteralExpression;
         expect(le.value).to.equal(42);
 
-        const ve = ce.args[1] as VariableExpression;
+        const ve = e.args[1] as VariableExpression;
         expect(ve.name).to.equal('a');
     });
 
     it('should return TernaryExpression', () => {
-        const e = tokenize('check ? 42 : 21');
+        const e = tokenize<TernaryExpression>('check ? 42 : 21');
         expect(e.type).to.equal(ExpressionType.Ternary);
+        expect(e.predicate.type).to.equal(ExpressionType.Variable);
+        expect(e.whenTrue.type).to.equal(ExpressionType.Literal);
+        expect(e.whenFalse.type).to.equal(ExpressionType.Literal);
 
-        const te = e as TernaryExpression;
-        expect(te.predicate.type).to.equal(ExpressionType.Variable);
-        expect(te.whenTrue.type).to.equal(ExpressionType.Literal);
-        expect(te.whenFalse.type).to.equal(ExpressionType.Literal);
-
-        const pe = te.predicate as VariableExpression;
+        const pe = e.predicate as VariableExpression;
         expect(pe.name).to.equal('check');
 
-        const wt = te.whenTrue as LiteralExpression;
+        const wt = e.whenTrue as LiteralExpression;
         expect(wt.value).to.equal(42);
 
-        const wf = te.whenFalse as LiteralExpression;
+        const wf = e.whenFalse as LiteralExpression;
         expect(wf.value).to.equal(21);
     });
 
     it('should return BinaryExpression', () => {
-        const e = tokenize('v1 > v2');
+        const e = tokenize<BinaryExpression>('v1 > v2');
         expect(e.type).to.equal(ExpressionType.Binary);
+        expect(e.operator).to.equal('>');
+        expect(e.left.type).to.equal(ExpressionType.Variable);
+        expect(e.right.type).to.equal(ExpressionType.Variable);
 
-        const be = e as BinaryExpression;
-        expect(be.operator).to.equal('>');
-        expect(be.left.type).to.equal(ExpressionType.Variable);
-        expect(be.right.type).to.equal(ExpressionType.Variable);
-
-        const le = be.left as VariableExpression;
+        const le = e.left as VariableExpression;
         expect(le.name).to.equal('v1');
 
-        const re = be.right as VariableExpression;
+        const re = e.right as VariableExpression;
         expect(re.name).to.equal('v2');
 
         const ie1 = tokenize("`don't ${w}, 42`");
@@ -284,18 +241,16 @@ describe('Tokenizer simple call to check ExpressionType', () => {
     });
 
     it('should return BinaryExpression with correct precedence', () => {
-        const e = tokenize('1 + 2 * 3');
+        const e = tokenize<BinaryExpression>('1 + 2 * 3');
         expect(e.type).to.equal(ExpressionType.Binary);
+        expect(e.operator).to.equal('+');
+        expect(e.left.type).to.equal(ExpressionType.Literal);
+        expect(e.right.type).to.equal(ExpressionType.Binary);
 
-        const be = e as BinaryExpression;
-        expect(be.operator).to.equal('+');
-        expect(be.left.type).to.equal(ExpressionType.Literal);
-        expect(be.right.type).to.equal(ExpressionType.Binary);
-
-        const le = be.left as LiteralExpression;
+        const le = e.left as LiteralExpression;
         expect(le.value).to.equal(1);
 
-        const re = be.right as BinaryExpression;
+        const re = e.right as BinaryExpression;
         expect(re.operator).to.equal('*');
         expect(re.left.type).to.equal(ExpressionType.Literal);
         expect(re.right.type).to.equal(ExpressionType.Literal);
