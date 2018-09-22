@@ -1,6 +1,6 @@
 {
   "name": "jokenizer",
-  "version": "0.1.5",
+  "version": "0.2.0",
   "description": "Tokenize javascript expressions.",
   "main": "dist/index.js",
   "keywords": [
@@ -22,7 +22,8 @@
     "test": "mocha --opts mocha.opts --reporter spec",
     "cover": "nyc --reporter text-summary mocha --opts mocha.opts --reporter spec",
     "coveralls": "nyc mocha --opts mocha.opts && nyc report --reporter=text-lcov --opts mocha.opts | coveralls",
-    "build": "tsc"
+    "build": "tsc",
+    "prepublish": "npm run build"
   },
   "author": "Umut Özel",
   "license": "MIT",
