@@ -71,7 +71,7 @@ export class ExpressionVisitor {
     }
 
     protected visitMember(exp: MemberExpression, scopes: any[]) {
-        return this.readVar(exp.member, [this.visit(exp.owner, scopes)])
+        return this.readVar(exp.name, [this.visit(exp.owner, scopes)])
     }
 
     protected visitObject(exp: ObjectExpression, scopes: any[]) {
@@ -99,7 +99,7 @@ export class ExpressionVisitor {
     }
 
     protected visitVariable(exp: VariableExpression, scopes: any[]) {
-        return this.readVar(exp, scopes);
+        return this.readVar(exp.name, scopes);
     }
 
     protected evalBinary(leftValue, operator: string, right: Expression, scopes: any[]) {
@@ -161,9 +161,9 @@ export class ExpressionVisitor {
         return [null, false];
     }
 
-    protected readVar(exp: VariableExpression, scopes: any[]) {
-        const s = scopes.find(s => s && exp.name in s);
-        const v = s && s[exp.name];
+    protected readVar(prop: string, scopes: any[]) {
+        const s = scopes.find(s => s && prop in s);
+        const v = s && s[prop];
         return (v && v.bind && typeof v.bind === 'function') ? v.bind(s) : v;
     }
 
