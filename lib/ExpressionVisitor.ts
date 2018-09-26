@@ -27,8 +27,11 @@ export class ExpressionVisitor {
             case ExpressionType.Ternary: return this.visitTernary(<any>exp, scopes);
             case ExpressionType.Unary: return this.visitUnary(<any>exp, scopes);
             case ExpressionType.Variable: return this.visitVariable(<any>exp, scopes);
+            case ExpressionType.Group: 
+                const gexp = exp as GroupExpression;
+                if (gexp.expressions.length == 1)
+                    return this.process(gexp.expressions[0], scopes);
             case ExpressionType.Assign:
-            case ExpressionType.Group:
             case ExpressionType.Func:
                 throw new Error(`Invalid ${exp.type} expression usage`);
             default: throw new Error(`Unsupported ExpressionType ${exp.type}`);

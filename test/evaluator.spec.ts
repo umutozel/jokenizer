@@ -201,10 +201,10 @@ describe('Evaluation tests', () => {
     });
 
     it('should fix precedence', () => {
-        const v1 = evaluate(tokenize('1 + 2 * 3'));
+        const v1 = evaluate(tokenize('(1 + 2 * 3)'));
         expect(v1).to.equal(7);
 
-        const v2 = evaluate(tokenize('1 * 2 + 3'));
+        const v2 = evaluate(tokenize('(1 * 2 + 3)'));
         expect(v2).to.equal(5);
     })
 
