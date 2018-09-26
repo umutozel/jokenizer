@@ -30,7 +30,7 @@ export class ExpressionVisitor {
             case ExpressionType.Group: 
                 const gexp = exp as GroupExpression;
                 if (gexp.expressions.length == 1)
-                    return this.process(gexp.expressions[0], scopes);
+                    return this.visit(gexp.expressions[0], scopes);
             case ExpressionType.Assign:
             case ExpressionType.Func:
                 throw new Error(`Invalid ${exp.type} expression usage`);
