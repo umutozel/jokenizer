@@ -219,7 +219,8 @@ export function tokenize<T extends Expression = Expression>(exp: string): T {
     function tryKnown(e: Expression) {
         if (e.type === ExpressionType.Variable) {
             const le = e as VariableExpression;
-            if (le.name in knowns) return literalExp(knowns[le.name]);
+            if (knowns.hasOwnProperty(le.name)) 
+                return literalExp(knowns[le.name]);
         }
 
         return null;
