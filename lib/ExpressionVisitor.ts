@@ -47,10 +47,9 @@ export class ExpressionVisitor {
         return this.evalBinary(this.visit(e.left, scopes), e.operator, e.right, scopes);
     }
 
-    protected visitCall(exp: Expression, scopes: any[]) {
-        const e = exp as CallExpression;
-        const c = this.visit(e.callee, scopes);
-        const a = e.args.map(x => x.type === ExpressionType.Func ? this.visitFunc(<any>x, scopes) : this.visit(x, scopes));
+    protected visitCall(exp: CallExpression, scopes: any[]) {
+        const c = this.visit(exp.callee, scopes);
+        const a = exp.args.map(x => x.type === ExpressionType.Func ? this.visitFunc(<any>x, scopes) : this.visit(x, scopes));
         return c(...a);
     }
 

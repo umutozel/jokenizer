@@ -7,6 +7,11 @@ import { ObjectExpression, UnaryExpression, BinaryExpression, AssignExpression, 
 
 describe('Evaluation tests', () => {
 
+    it('should evaluate number with string', () => {
+        const v = evaluate('42');
+        expect(v).to.equal(42);
+    });
+
     it('should evaluate number', () => {
         const v = evaluate(tokenize('42'));
         expect(v).to.equal(42);
