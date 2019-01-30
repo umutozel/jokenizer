@@ -5,11 +5,11 @@
     "moduleResolution": "node",
     "outDir": "./dist",
     "declaration": true,
+    "sourceMap": true,
     "lib": [
       "es2015"
     ]
   },
-  "compileOnSave": true,
   "include": [
     "./index.ts",
     "./lib/**/*.ts"
