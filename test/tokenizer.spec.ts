@@ -5,7 +5,7 @@ import {
     ObjectExpression, ArrayExpression,
     BinaryExpression, MemberExpression, IndexerExpression, 
     FuncExpression, CallExpression, TernaryExpression
-} from '../lib/types';
+} from '..';
 
 import { expect } from 'chai';
 import 'mocha';

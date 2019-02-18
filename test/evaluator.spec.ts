@@ -3,7 +3,10 @@ import { evaluate } from '../lib/evaluator';
 
 import { expect } from 'chai';
 import 'mocha';
-import { ObjectExpression, UnaryExpression, BinaryExpression, AssignExpression, LiteralExpression, FuncExpression, GroupExpression, ExpressionType } from '../lib/types';
+import { 
+    ObjectExpression, UnaryExpression, BinaryExpression, 
+    GroupExpression, ExpressionType 
+} from '..';
 
 describe('Evaluation tests', () => {
 

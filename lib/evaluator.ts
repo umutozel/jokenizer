@@ -1,4 +1,4 @@
-import { Expression } from './types';
+import { Expression } from './shared';
 import { ExpressionVisitor } from './ExpressionVisitor';
 import { tokenize } from './tokenizer';
 

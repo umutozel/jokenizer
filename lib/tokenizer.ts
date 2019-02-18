@@ -4,7 +4,7 @@ import {
     GroupExpression, AssignExpression, ObjectExpression, ArrayExpression,
     BinaryExpression, MemberExpression, IndexerExpression, FuncExpression,
     CallExpression, TernaryExpression
-} from './types';
+} from './shared';
 
 export function tokenize<T extends Expression = Expression>(exp: string): T {
     if (!exp) return null;

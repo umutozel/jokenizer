@@ -4,7 +4,7 @@ import {
     GroupExpression, ObjectExpression, ArrayExpression,
     BinaryExpression, MemberExpression, IndexerExpression, 
     FuncExpression, CallExpression, TernaryExpression
-} from './types';
+} from './shared';
 
 export class ExpressionVisitor {
 
