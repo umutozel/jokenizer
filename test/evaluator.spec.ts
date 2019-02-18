@@ -1,9 +1,7 @@
-import { tokenize } from '../lib/tokenizer';
-import { evaluate } from '../lib/evaluator';
-
 import { expect } from 'chai';
 import 'mocha';
 import { 
+    tokenize, evaluate,
     ObjectExpression, UnaryExpression, BinaryExpression, 
     GroupExpression, ExpressionType 
 } from '..';
@@ -67,7 +65,7 @@ describe('Evaluation tests', () => {
         const v3 = evaluate(tokenize('!IsActive'), { IsActive: false });
         expect(v3).to.be.true;
 
-        const t4 = <UnaryExpression>tokenize('~index');
+        const t4 = tokenize<UnaryExpression>('~index');
         const v4 = evaluate(t4, { index: -1 });
         expect(v4).to.equal(0);
 
@@ -76,7 +74,7 @@ describe('Evaluation tests', () => {
     });
 
     it('should evaluate object', () => {
-        const t = tokenize('{ a: v1, b.c }') as ObjectExpression;
+        const t = tokenize<ObjectExpression>('{ a: v1, b.c }');
         const v = evaluate(t, { v1: 3, b: { c: 5 } });
         expect(v).to.deep.equal({ a: 3, c: 5 });
     });
@@ -193,7 +191,7 @@ describe('Evaluation tests', () => {
         const v19 = evaluate(tokenize('v1 && v2'), { v1: true, v2: false });
         expect(v19).to.be.false;
 
-        const t20 = tokenize('v1 || v2') as BinaryExpression;
+        const t20 = tokenize<BinaryExpression>('v1 || v2');
         const v20 = evaluate(t20, { v1: false, v2: true });
         expect(v20).to.be.true;
 
@@ -221,7 +219,7 @@ describe('Evaluation tests', () => {
     })
 
     it('should throw for invalid token', () => {
-        const objExp = <ObjectExpression>tokenize('{ a: b }');
+        const objExp = tokenize<ObjectExpression>('{ a: b }');
         expect(() => evaluate(objExp.members[0])).to.throw();
 
         const groupExp = <GroupExpression>{ expressions: [], type: ExpressionType.Group };

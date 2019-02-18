@@ -1,5 +1,5 @@
-import { tokenize } from '../lib/tokenizer';
 import {
+    tokenize, 
     ExpressionType,
     LiteralExpression, VariableExpression, UnaryExpression,
     ObjectExpression, ArrayExpression,
@@ -46,23 +46,17 @@ describe('Tokenizer simple call to check ExpressionType', () => {
     });
 
     it('should return LiteralExpression for known variables', () => {
-        const e1 = tokenize('true');
+        const e1 = tokenize<LiteralExpression>('true');
         expect(e1.type).to.equal(ExpressionType.Literal);
+        expect(e1.value).to.be.true;
 
-        const le1 = e1 as LiteralExpression;
-        expect(le1.value).to.be.true;
-
-        const e2 = tokenize('false');
+        const e2 = tokenize<LiteralExpression>('false');
         expect(e2.type).to.equal(ExpressionType.Literal);
+        expect(e2.value).to.be.false;
 
-        const le2 = e2 as LiteralExpression;
-        expect(le2.value).to.be.false;
-
-        const e3 = tokenize('null');
+        const e3 = tokenize<LiteralExpression>('null');
         expect(e3.type).to.equal(ExpressionType.Literal);
-
-        const le3 = e3 as LiteralExpression;
-        expect(le3.value).to.be.null;
+        expect(e3.value).to.be.null;
     });
 
     it('should return VariableExpression', () => {
