@@ -219,7 +219,7 @@ describe('Tokenizer simple call to check ExpressionType', () => {
 
         const ie1 = tokenize("`don't ${w}, 42`");
         expect(ie1.type).to.equal(ExpressionType.Binary);
-   
+
         const bie = ie1 as BinaryExpression;
         expect(bie.operator).to.equal('+');
         expect(bie.left.type).to.equal(ExpressionType.Binary);
