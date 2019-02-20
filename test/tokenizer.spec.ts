@@ -1,3 +1,6 @@
+import { expect } from 'chai';
+import 'mocha';
+
 import {
     tokenize, 
     ExpressionType,
@@ -6,9 +9,6 @@ import {
     BinaryExpression, MemberExpression, IndexerExpression, 
     FuncExpression, CallExpression, TernaryExpression
 } from '..';
-
-import { expect } from 'chai';
-import 'mocha';
 
 describe('Tokenizer simple call to check ExpressionType', () => {
 
