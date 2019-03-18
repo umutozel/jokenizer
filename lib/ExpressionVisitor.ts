@@ -118,7 +118,7 @@ export class ExpressionVisitor {
 
         [value, match] = this.tryEvalEquality(leftValue, operator, rightValue)
         if (match) return value;
-   
+
         throw new Error(`Unknown binary operator ${operator}`);
     }
 

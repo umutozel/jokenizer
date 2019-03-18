@@ -9,6 +9,7 @@ import {
     BinaryExpression, MemberExpression, IndexerExpression, 
     FuncExpression, CallExpression, TernaryExpression
 } from '..';
+import { Tokenizer } from '../lib/tokenizer';
 
 describe('Tokenizer simple call to check ExpressionType', () => {
 
