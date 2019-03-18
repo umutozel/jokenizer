@@ -5,397 +5,15 @@ import {
     BinaryExpression, MemberExpression, IndexerExpression, FuncExpression,
     CallExpression, TernaryExpression
 } from './shared';
+import { Settings } from './Settings';
 
 export function tokenize<T extends Expression = Expression>(exp: string): T {
-    // if (!exp) return null;
-
-    // const len = exp.length;
-    // let idx = 0;
-
-    // let cd = exp.charCodeAt(0);
-    // let ch = exp[0];
-
-    // function getExp(): Expression {
-    //     skip();
-
-    //     let e: Expression = tryLiteral()
-    //         || tryVariable()
-    //         || tryUnary()
-    //         || tryGroup()
-    //         || tryObject()
-    //         || tryArray();
-
-    //     if (!e) return e;
-    //     e = tryKnown(e) || e;
-
-    //     let r: Expression;
-    //     do {
-    //         skip();
-
-    //         r = e;
-    //         e = tryMember(e)
-    //             || tryIndexer(e)
-    //             || tryFunc(e)
-    //             || tryCall(e)
-    //             || tryTernary(e)
-    //             || tryBinary(e);
-    //     } while (e)
-
-    //     return r;
-    // }
-
-    // function tryLiteral() {
-
-    //     function tryNumeric() {
-    //         let n = '';
-
-    //         function x() {
-    //             while (isNumber()) {
-    //                 n += ch;
-    //                 move();
-    //             }
-    //         }
-
-    //         x();
-    //         if (get(separator)) {
-    //             n += separator;
-    //             x();
-    //         }
-
-    //         if (n) {
-    //             if (isVariableStart())
-    //                 throw new Error(`Unexpected character (${ch}) at index ${idx}`);
-
-    //             return literalExp(Number(n));
-    //         }
-
-    //         return null;
-    //     }
-
-    //     function tryString() {
-    //         let c = ch, inter;
-    //         if (c === '`') {
-    //             inter = true;
-    //         }
-    //         else if (c !== '"' && c !== "'") return null;
-
-    //         const q = c, es: Expression[] = [];
-    //         let s = '';
-
-    //         while (c = move()) {
-    //             if (c === q) {
-    //                 move();
-
-    //                 if (es.length) {
-    //                     if (s) {
-    //                         es.push(literalExp(s));
-    //                     }
-
-    //                     return es.reduce((p, n) => binaryExp('+', p, n), literalExp(''));
-    //                 }
-
-    //                 return literalExp(s);
-    //             }
-
-    //             if (c === '\\') {
-    //                 c = move();
-    //                 switch (c) {
-    //                     case 'b': s += '\b'; break;
-    //                     case 'f': s += '\f'; break;
-    //                     case 'n': s += '\n'; break;
-    //                     case 'r': s += '\r'; break;
-    //                     case 't': s += '\t'; break;
-    //                     case 'v': s += '\x0B'; break;
-    //                     case '0': s += '\0'; break;
-    //                     case '\\': s += '\\'; break;
-    //                     case "'": s += "'"; break;
-    //                     case '"': s += '"'; break;
-    //                     default: s += '\\' + c; break;
-    //                 }
-    //             } else if (inter && get('${')) {
-    //                 if (s) {
-    //                     es.push(literalExp(s));
-    //                     s = '';
-    //                 }
-    //                 es.push(getExp());
-    //                 skip()
-
-    //                 if (ch !== '}')
-    //                     throw new Error(`Unterminated template literal at ${idx}`);
-    //             } else {
-    //                 s += c;
-    //             }
-    //         }
-
-    //         throw new Error(`Unclosed quote after ${s}`);
-    //     }
-
-    //     return tryNumeric() || tryString();
-    // }
-
-    // function getVariableName() {
-    //     let v = '';
-
-    //     if (isVariableStart()) {
-    //         do {
-    //             v += ch;
-    //             move();
-    //         } while (stillVariable());
-    //     }
-
-    //     return v;
-    // }
-
-    // function tryVariable() {
-    //     const v = getVariableName();
-    //     return v ? variableExp(v) : null;
-    // }
-
-    // function tryUnary() {
-    //     const u = unary.find(u => get(u));
-    //     return u ? unaryExp(u, getExp()) : null;
-    // }
-
-    // function tryGroup() {
-    //     return get('(') ? groupExp(getGroup()) : null;
-    // }
-
-    // function getGroup() {
-    //     const es: Expression[] = [];
-    //     do {
-    //         const e = getExp();
-    //         if (e) {
-    //             es.push(e);
-    //         }
-    //     } while (get(','));
-
-    //     to(')');
-
-    //     return es;
-    // }
-
-    // function tryObject() {
-    //     if (!get('{')) return null;
-
-    //     const es: AssignExpression[] = [];
-    //     do {
-    //         skip();
-    //         const ve = getExp() as VariableExpression;
-    //         if (ve.type !== ExpressionType.Variable && ve.type !== ExpressionType.Member)
-    //             throw new Error(`Invalid assignment at ${idx}`);
-
-    //         skip();
-    //         if (get(':')) {
-    //             if (ve.type !== ExpressionType.Variable)
-    //                 throw new Error(`Invalid assignment at ${idx}`);
-
-    //             skip();
-
-    //             es.push(assignExp(ve.name, getExp()));
-    //         }
-    //         else {
-    //             es.push(assignExp(ve.name, ve));
-    //         }
-    //     } while (get(','));
-
-    //     to('}');
-
-    //     return objectExp(es);
-    // }
-
-    // function tryArray() {
-    //     if (!get('[')) return null;
-
-    //     const es: Expression[] = [];
-    //     do {
-    //         es.push(getExp());
-    //     } while (get(','));
-
-    //     to(']');
-
-    //     return arrayExp(es);
-    // }
-
-    // function tryKnown(e: Expression) {
-    //     if (e.type === ExpressionType.Variable) {
-    //         const le = e as VariableExpression;
-    //         if (knowns.hasOwnProperty(le.name)) 
-    //             return literalExp(knowns[le.name]);
-    //     }
-
-    //     return null;
-    // }
-
-    // function tryMember(e: Expression) {
-    //     if (!get('.')) return null;
-
-    //     skip();
-    //     const v = getVariableName();
-    //     if (!v) throw new Error(`Invalid member identifier at ${idx}`);
-
-    //     return memberExp(e, v);
-    // }
-
-    // function tryIndexer(e: Expression) {
-    //     if (!get('[')) return null;
-
-    //     skip();
-    //     const k = getExp();
-    //     if (k == null) throw new Error(`Invalid indexer identifier at ${idx}`);
-
-    //     to(']');
-
-    //     return indexerExp(e, k);
-    // }
-
-    // function tryFunc(e: Expression) {
-    //     if (get('=>'))
-    //         return funcExp(getParameters(e), getExp());
-
-    //     if (e.type === ExpressionType.Variable && (e as VariableExpression).name === 'function') {
-    //         const parameters = getParameters(getExp());
-    //         to('{');
-    //         skip();
-    //         get('return');
-
-    //         const body = getExp();
-    //         get(';');
-    //         to('}');
-
-    //         return funcExp(parameters, body);
-    //     }
-
-    //     return null;
-    // }
-
-    // function getParameters(e: Expression) {
-    //     if (e.type === ExpressionType.Group) {
-    //         const ge = e as GroupExpression;
-    //         return ge.expressions.map(x => {
-    //             if (x.type !== ExpressionType.Variable)
-    //                 throw new Error(`Invalid parameter at ${idx}`);
-
-    //             return (x as VariableExpression).name;
-    //         });
-    //     }
-
-    //     if (e.type !== ExpressionType.Variable)
-    //         throw new Error(`Invalid parameter at ${idx}`);
-
-    //     return [(e as VariableExpression).name];
-    // }
-
-    // function tryCall(e: Expression) {
-    //     return get('(') ? getCall(e) : null;
-    // }
-
-    // function getCall(e: Expression) {
-    //     const args = getGroup();
-
-    //     return callExp(e, args);
-    // }
-
-    // function tryTernary(e: Expression) {
-    //     if (!get('?')) return null;
-
-    //     const whenTrue = getExp();
-    //     to(':');
-    //     const whenFalse = getExp();
-
-    //     return ternaryExp(e, whenTrue, whenFalse);
-    // }
-
-    // function tryBinary(e: Expression) {
-    //     const op = binary.find(b => get(b));
-
-    //     if (!op) return null;
-
-    //     const right = getExp();
-
-    //     if (right.type === ExpressionType.Binary)
-    //         return fixPrecedence(e, op, right as BinaryExpression);
-
-    //     return binaryExp(op, e, right);
-    // }
-
-    // function isSpace() {
-    //     return cd === 32 || cd === 9 || cd === 160 || cd === 10 || cd === 13;
-    // }
-
-    // function isNumber() {
-    //     return cd >= 48 && cd <= 57;
-    // }
-
-    // function isVariableStart() {
-    //     return (cd === 36) || (cd === 95) || // `$`, `_`
-    //         (cd >= 65 && cd <= 90) || // A...Z
-    //         (cd >= 97 && cd <= 122); // a...z
-    // }
-
-    // function stillVariable() {
-    //     return isVariableStart() || isNumber();
-    // }
-
-    // function move(count: number = 1) {
-    //     idx += count;
-    //     cd = exp.charCodeAt(idx)
-    //     return ch = exp.charAt(idx);
-    // }
-
-    // function get(s: string) {
-    //     if (eq(idx, s))
-    //         return !!move(s.length);
-
-    //     return false;
-    // }
-
-    // function skip() {
-    //     while (isSpace() && move());
-    // }
-
-    // function eq(idx: number, target: string) {
-    //     return exp.substr(idx, target.length) === target;
-    // }
-
-    // function to(c: string) {
-    //     skip();
-
-    //     if (!eq(idx, c))
-    //         throw new Error(`Expected ${c} at index ${idx}, found ${exp[idx]}`);
-
-    //     move(c.length);
-    // }
-
     return new Tokenizer(exp).process() as T;
 }
 
-const unary = ['-', '+', '!', '~'],
-    binary = [
-        '&&', '||',
-        '|', '^', '&',
-        '===', '!==', '==', '!=',
-        '<<', '>>>', '>>',
-        '<=', '>=', '<', '>',
-        '+', '-',
-        '*', '/', '%'],
-    precedence = {
-        '&&': 0, '||': 0,
-        '|': 1, '^': 1, '&': 1,
-        '===': 2, '!==': 2, '==': 2, '!=': 2,
-        '<=': 3, '>=': 3, '<': 3, '>': 3,
-        '<<': 4, '>>>': 4, '>>': 4,
-        '+': 5, '-': 5,
-        '*': 6, '/': 6, '%': 6
-    },
-    knowns = {
-        'true': true,
-        'false': false,
-        'null': null
-    };
-
 export class Tokenizer {
 
-    constructor(protected readonly exp: string) {
+    constructor(protected readonly exp: string, protected readonly settings = Settings.default) {
         const n = 1.1;
         this.separator = n.toLocaleString().substr(1, 1);
 
@@ -566,7 +184,7 @@ export class Tokenizer {
     }
 
     protected tryUnary() {
-        const u = unary.find(u => this.get(u));
+        const u = this.settings.unaryOperators.find(u => this.get(u));
         return u ? Tokenizer.unaryExp(u, this.getExp()) : null;
     }
 
@@ -633,8 +251,8 @@ export class Tokenizer {
     protected tryKnown(e: Expression) {
         if (e.type === ExpressionType.Variable) {
             const le = e as VariableExpression;
-            if (knowns.hasOwnProperty(le.name))
-                return Tokenizer.literalExp(knowns[le.name]);
+            if (this.settings.containsKnown(le.name))
+                return Tokenizer.literalExp(this.settings.getKnownValue(le.name));
         }
 
         return null;
@@ -720,7 +338,7 @@ export class Tokenizer {
     }
 
     protected tryBinary(e: Expression) {
-        const op = binary.find(b => this.get(b));
+        const op = this.settings.binaryOperators.find(b => this.get(b));
 
         if (!op) return null;
 
@@ -781,8 +399,8 @@ export class Tokenizer {
     }
 
     protected fixPrecedence(left: Expression, leftOp: string, right: BinaryExpression) {
-        const p1 = precedence[leftOp];
-        const p2 = precedence[right.operator];
+        const p1 = this.settings.getBinaryOperator(leftOp).precedence;
+        const p2 = this.settings.getBinaryOperator(right.operator).precedence;
 
         return p2 < p1
             ? Tokenizer.binaryExp(right.operator, Tokenizer.binaryExp(leftOp, left, right.left), right.right)

@@ -5,9 +5,13 @@ import {
     BinaryExpression, MemberExpression, IndexerExpression, 
     FuncExpression, CallExpression, TernaryExpression
 } from './shared';
+import { Settings } from './Settings';
 
 export class ExpressionVisitor {
 
+    constructor(protected readonly settings: Settings = Settings.default) {
+    }
+    
     process(exp: Expression, scopes: any[]) {
         if (exp.type === ExpressionType.Func)
             return this.visitFunc(exp as FuncExpression, scopes);
@@ -91,13 +95,10 @@ export class ExpressionVisitor {
 
     protected visitUnary(exp: UnaryExpression, scopes: any[]) {
         const value = this.visit(exp.target, scopes);
-        switch (exp.operator) {
-            case '-': return -1 * value;
-            case '+': return Number(value);
-            case '!': return !value;
-            case '~': return ~value;
-            default: throw new Error(`Unknown unary operator ${exp.operator}`);
-        }
+        const op = this.settings.getUnaryOperator(exp.operator);
+        if (!op) throw new Error(`Unknown unary operator ${exp.operator}`);
+
+        return op(value);
     }
 
     protected visitVariable(exp: VariableExpression, scopes: any[]) {
@@ -105,62 +106,16 @@ export class ExpressionVisitor {
     }
 
     protected evalBinary(leftValue, operator: string, right: Expression, scopes: any[]) {
-        let value, match: boolean;
-        [value, match] = this.tryEvalLogical(leftValue, operator, right, scopes);
-        if (match) return value;
+        const op = this.settings.getBinaryOperator(operator);
+        if (!op) throw new Error(`Unknown binary operator ${operator}`);
 
+        if (~['&&', '||'].indexOf(operator))
+            return op.func(leftValue, () => this.visit(right, scopes));
+        
         let rightValue = this.visit(right, scopes);
-        [value, match] = this.tryEvalNumeric(leftValue, operator, rightValue)
-        if (match) return value;
-
         [leftValue, rightValue] = this.tryFixDate(leftValue, rightValue);
-        [rightValue, leftValue] = this.tryFixDate(rightValue, leftValue);
 
-        [value, match] = this.tryEvalEquality(leftValue, operator, rightValue)
-        if (match) return value;
-
-        throw new Error(`Unknown binary operator ${operator}`);
-    }
-
-    protected tryEvalLogical(leftValue, operator: string, right: Expression, scopes: any[]): [any, boolean] {
-        switch (operator) {
-            case '&&': return [leftValue && this.visit(right, scopes), true];
-            case '||': return [leftValue || this.visit(right, scopes), true];
-        }
-
-        return [null, false]
-    }
-
-    protected tryEvalNumeric(leftValue, operator: string, rightValue): [any, boolean] {
-        switch (operator) {
-            case '%': return [leftValue % rightValue, true];
-            case '+': return [leftValue + rightValue, true];
-            case '-': return [leftValue - rightValue, true];
-            case '*': return [leftValue * rightValue, true];
-            case '/': return [leftValue / rightValue, true];
-            case '^': return [leftValue ^ rightValue, true];
-            case '|': return [leftValue | rightValue, true];
-            case '<<': return [leftValue << rightValue, true];
-            case '>>': return [leftValue >> rightValue, true];
-            case '>>>': return [leftValue >>> rightValue, true];
-        };
-
-        return [null, false];
-    }
-
-    protected tryEvalEquality(leftValue, operator: string, rightValue): [any, boolean] {
-        switch (operator) {
-            case '==': return [leftValue == rightValue, true];
-            case '!=': return [leftValue != rightValue, true];
-            case '<': return [leftValue < rightValue, true];
-            case '>': return [leftValue > rightValue, true];
-            case '<=': return [leftValue <= rightValue, true];
-            case '>=': return [leftValue >= rightValue, true];
-            case '===': return [leftValue === rightValue, true];
-            case '!==': return [leftValue !== rightValue, true];
-        }
-
-        return [null, false];
+        return op.func(leftValue, rightValue);
     }
 
     protected readVar(prop: string, scopes: any[]) {

@@ -1,9 +1,10 @@
 import { expect } from 'chai';
 import 'mocha';
-import { 
+import {
     tokenize, evaluate,
-    ObjectExpression, UnaryExpression, BinaryExpression, 
-    GroupExpression, ExpressionType 
+    ObjectExpression, UnaryExpression, BinaryExpression,
+    GroupExpression, ExpressionType,
+    Settings
 } from '..';
 
 describe('Evaluation tests', () => {
