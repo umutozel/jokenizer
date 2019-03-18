@@ -49,6 +49,10 @@ describe('Evaluation tests', () => {
 
         const v3 = evaluate(tokenize('null'));
         expect(v3).to.be.null;
+
+        const settings = new Settings().addKnownValue('secret', 42);
+        const v4 = evaluate('secret', settings);
+        expect(v4).to.equal(42);
     });
 
     it('should evaluate variable', () => {
@@ -72,6 +76,14 @@ describe('Evaluation tests', () => {
 
         const t5 = <UnaryExpression>{ operator: 'None', target: t4.target, type: t4.type };
         expect(() => evaluate(t5, { index: -1 })).to.throw();
+    });
+
+    it('should evaluate custom unary', () => {
+        const settings = new Settings()
+            .addUnaryOperator('^', e => e * e);
+
+        const v = evaluate('^Id', settings, { Id: 16 });
+        expect(v).to.equal(256);
     });
 
     it('should evaluate object', () => {
@@ -207,25 +219,39 @@ describe('Evaluation tests', () => {
         expect(v23).to.be.true;
     });
 
-    it('should fix precedence', () => {
-        const v1 = evaluate(tokenize('(1 + 2 * 3)'));
-        expect(v1).to.equal(7);
+    it('should evaluate custom binary', () => {
+        var settings = new Settings()
+            .addBinaryOperator('in', (l, r) => r.indexOf(l) >= 0);
 
-        const v2 = evaluate(tokenize('(1 * 2 + 3)'));
-        expect(v2).to.equal(5);
-    })
+    var company1 = {};
+    var company2 = {};
+    var companies = [company1];
 
-    it('should throw for unknown token', () => {
-        expect(() => evaluate(<any>{ type: 'NONE' })).to.throw();
-    })
+    var f = evaluate("(c, cs) => c in cs", settings);
 
-    it('should throw for invalid token', () => {
-        const objExp = tokenize<ObjectExpression>('{ a: b }');
-        expect(() => evaluate(objExp.members[0])).to.throw();
+    expect(f(company1, companies)).to.be.true;
+    expect(f(company2, companies)).to.be.false;
+});
 
-        const groupExp = <GroupExpression>{ expressions: [], type: ExpressionType.Group };
-        expect(() => evaluate(groupExp)).to.throw();
+it('should fix precedence', () => {
+    const v1 = evaluate(tokenize('(1 + 2 * 3)'));
+    expect(v1).to.equal(7);
 
-        expect(() => evaluate(tokenize('a < b => b*2'))).to.throw();
-    })
+    const v2 = evaluate(tokenize('(1 * 2 + 3)'));
+    expect(v2).to.equal(5);
+})
+
+it('should throw for unknown token', () => {
+    expect(() => evaluate(<any>{ type: 'NONE' })).to.throw();
+})
+
+it('should throw for invalid token', () => {
+    const objExp = tokenize<ObjectExpression>('{ a: b }');
+    expect(() => evaluate(objExp.members[0])).to.throw();
+
+    const groupExp = <GroupExpression>{ expressions: [], type: ExpressionType.Group };
+    expect(() => evaluate(groupExp)).to.throw();
+
+    expect(() => evaluate(tokenize('a < b => b*2'))).to.throw();
+})
 });

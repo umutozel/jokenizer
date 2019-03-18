@@ -58,6 +58,7 @@ export class Settings {
 
     addKnownValue(identifier: string, value) {
         this.knowns[identifier] = value;
+        return this;
     }
 
     containsKnown(identifier: string) {
@@ -70,6 +71,7 @@ export class Settings {
 
     addUnaryOperator(op: string, func: (value) => any) {
         this.unary[op] = func;
+        return this;
     }
 
     containsUnary(op: string) {
@@ -82,6 +84,7 @@ export class Settings {
 
     addBinaryOperator(op: string, func: (left, right) => any, precedence = 7) {
         this.binary[op] = {precedence, func};
+        return this;
     }
 
     containsBinary(op: string) {

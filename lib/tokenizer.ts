@@ -7,8 +7,8 @@ import {
 } from './shared';
 import { Settings } from './Settings';
 
-export function tokenize<T extends Expression = Expression>(exp: string): T {
-    return new Tokenizer(exp).process() as T;
+export function tokenize<T extends Expression = Expression>(exp: string, settings?: Settings): T {
+    return new Tokenizer(exp, settings).process() as T;
 }
 
 export class Tokenizer {
