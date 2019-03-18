@@ -191,67 +191,85 @@ describe('Evaluation tests', () => {
         const v15 = evaluate(tokenize('v1 | v2'), { v1: 5, v2: 3 });
         expect(v15).to.equal(7);
 
-        const t = tokenize('v1 << v2');
-        const v16 = evaluate(t, { v1: 5, v2: 3 });
-        expect(v16).to.equal(40);
+        const v16 = evaluate(tokenize('v1 & v2'), { v1: 5, v2: 3 });
+        expect(v16).to.equal(1);
 
-        const v17 = evaluate(tokenize('v1 >> v2'), { v1: 128, v2: 3 });
-        expect(v17).to.equal(16);
+        const t17 = tokenize('v1 << v2');
+        const v17 = evaluate(t17, { v1: 5, v2: 3 });
+        expect(v17).to.equal(40);
 
-        const v18 = evaluate(tokenize('v1 >>> v2'), { v1: 16, v2: 3 });
-        expect(v18).to.equal(2);
+        const v18 = evaluate(tokenize('v1 >> v2'), { v1: 128, v2: 3 });
+        expect(v18).to.equal(16);
 
-        const v19 = evaluate(tokenize('v1 && v2'), { v1: true, v2: false });
-        expect(v19).to.be.false;
+        const v19 = evaluate(tokenize('v1 >>> v2'), { v1: 16, v2: 3 });
+        expect(v19).to.equal(2);
 
-        const t20 = tokenize<BinaryExpression>('v1 || v2');
-        const v20 = evaluate(t20, { v1: false, v2: true });
-        expect(v20).to.be.true;
+        const v20 = evaluate(tokenize('v1 && v2'), { v1: true, v2: false });
+        expect(v20).to.be.false;
 
-        const t21 = <BinaryExpression>{ operator: 'None', left: t20.left, right: t20.right, type: t20.type };
-        expect(() => evaluate(t21, { v1: false, v2: true })).to.throw();
+        const t21 = tokenize<BinaryExpression>('v1 || v2');
+        const v21 = evaluate(t21, { v1: false, v2: true });
+        expect(v21).to.be.true;
+
+        const t22 = <BinaryExpression>{ operator: 'None', left: t21.left, right: t21.right, type: t21.type };
+        expect(() => evaluate(t22, { v1: false, v2: true })).to.throw();
 
         var date = new Date();
-        const v22 = evaluate(tokenize('v1 == v2'), { v1: date, v2: date.getTime() });
-        expect(v22).to.be.true;
-
-        const v23 = evaluate(tokenize('v1 == v2'), { v1: date, v2: date.toISOString() });
+        const v23 = evaluate(tokenize('v1 == v2'), { v1: date, v2: date.getTime() });
         expect(v23).to.be.true;
+
+        const v24 = evaluate(tokenize('v1 == v2'), { v1: date, v2: date.toISOString() });
+        expect(v24).to.be.true;
     });
 
     it('should evaluate custom binary', () => {
         var settings = new Settings()
-            .addBinaryOperator('in', (l, r) => r.indexOf(l) >= 0);
+            .addBinaryOperator('in', (l, r) => r.indexOf(l) >= 0)
+            .addBinaryOperator('mul', (l, r) => l*r, 0);
 
-    var company1 = {};
-    var company2 = {};
-    var companies = [company1];
+        const company1 = {};
+        const company2 = {};
+        const companies = [company1];
+        const f = evaluate('(c, cs) => c in cs', settings);
 
-    var f = evaluate("(c, cs) => c in cs", settings);
+        expect(f(company1, companies)).to.be.true;
+        expect(f(company2, companies)).to.be.false;
 
-    expect(f(company1, companies)).to.be.true;
-    expect(f(company2, companies)).to.be.false;
-});
+        const v = evaluate('2 mul 3 + 5', settings);
+        expect(v).to.equal(16);
+    });
 
-it('should fix precedence', () => {
-    const v1 = evaluate(tokenize('(1 + 2 * 3)'));
-    expect(v1).to.equal(7);
+    it('should fix precedence', () => {
+        const v1 = evaluate(tokenize('(1 + 2 * 3)'));
+        expect(v1).to.equal(7);
 
-    const v2 = evaluate(tokenize('(1 * 2 + 3)'));
-    expect(v2).to.equal(5);
-})
+        const v2 = evaluate(tokenize('(1 * 2 + 3)'));
+        expect(v2).to.equal(5);
+    })
 
-it('should throw for unknown token', () => {
-    expect(() => evaluate(<any>{ type: 'NONE' })).to.throw();
-})
+    it('should throw for unknown token', () => {
+        expect(() => evaluate(<any>{ type: 'NONE' })).to.throw();
+    })
 
-it('should throw for invalid token', () => {
-    const objExp = tokenize<ObjectExpression>('{ a: b }');
-    expect(() => evaluate(objExp.members[0])).to.throw();
+    it('should throw for invalid token', () => {
+        const objExp = tokenize<ObjectExpression>('{ a: b }');
+        expect(() => evaluate(objExp.members[0])).to.throw();
 
-    const groupExp = <GroupExpression>{ expressions: [], type: ExpressionType.Group };
-    expect(() => evaluate(groupExp)).to.throw();
+        const groupExp = <GroupExpression>{ expressions: [], type: ExpressionType.Group };
+        expect(() => evaluate(groupExp)).to.throw();
 
-    expect(() => evaluate(tokenize('a < b => b*2'))).to.throw();
-})
+        expect(() => evaluate(tokenize('a < b => b*2'))).to.throw();
+    })
+
+    it('settings tests', () => {
+        var settings = new Settings();
+
+        expect(3).to.equal(settings.knownIdentifiers.length);
+        expect(4).to.equal(settings.unaryOperators.length);
+        expect(21).to.equal(settings.binaryOperators.length);
+
+        expect(settings.containsKnown('true')).to.be.true;
+        expect(settings.containsUnary('!')).to.be.true;
+        expect(settings.containsBinary('%')).to.be.true;
+    })
 });
