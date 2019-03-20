@@ -17,8 +17,7 @@ export function tokenize<T extends Expression = Expression>(exp: string, setting
 export class Tokenizer {
 
     constructor(protected readonly exp: string, protected readonly settings = Settings.default) {
-        const n = 1.1;
-        this.separator = n.toLocaleString().substr(1, 1);
+        this.separator = '.';
 
         this.len = exp.length;
         this._idx = 0;
