@@ -2,13 +2,13 @@ import { expect } from 'chai';
 import 'mocha';
 
 import {
-    tokenize, 
     ExpressionType,
     LiteralExpression, VariableExpression, UnaryExpression,
     ObjectExpression, ArrayExpression,
     BinaryExpression, MemberExpression, IndexerExpression, 
     FuncExpression, CallExpression, TernaryExpression
-} from '..';
+} from '../lib/shared';
+import { tokenize } from '../lib/Tokenizer';
 
 describe('Tokenizer simple call to check ExpressionType', () => {
 
