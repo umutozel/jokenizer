@@ -1,6 +1,3 @@
-import find = require('array.prototype.find');
-find.shim();
-
 import {
     ExpressionType, Expression,
     LiteralExpression, VariableExpression, UnaryExpression,
