@@ -1,53 +1,61 @@
 export class Settings {
-    
-    constructor() {
-    }
+    public static default = new Settings();
 
+    // tslint:disable:object-literal-key-quotes
     private knowns = {
-        'true': true,
-        'false': false,
-        'null': null
+        "false": false,
+        "null": null,
+        "true": true,
     };
     private unary: { [op: string]: (value) => any } = {
-        '-': v => -1*v, 
-        '+': v => +v,
-        '!': v => !v,
-        '~': v => ~v
+        "!": (v) => !v,
+        "+": (v) => +v,
+        "-": (v) => -1 * v,
+        // tslint:disable-next-line:no-bitwise
+        "~": (v) => ~v,
     };
+    // tslint:disable:object-literal-sort-keys
     private binary: { [op: string]: BinaryOperatorInfo } = {
-        '&&': { precedence: 0, func: (l, r) => l && u(r) },
-        '||': { precedence: 0, func: (l, r) => l || u(r) },
-        
-        '|': { precedence: 1, func: (l, r) => l | u(r) },
-        '^': { precedence: 1, func: (l, r) => l ^ u(r) },
-        '&': { precedence: 1, func: (l, r) => l & u(r) },
+        "&&": { precedence: 0, func: (l, r) => l && u(r) },
+        "||": { precedence: 0, func: (l, r) => l || u(r) },
 
-        '===': { precedence: 2, func: (l, r) => l === u(r) },
-        '!==': { precedence: 2, func: (l, r) => l !== u(r) },
-        '==': { precedence: 2, func: (l, r) => l == u(r) },
-        '!=': { precedence: 2, func: (l, r) => l != u(r) },
+        // tslint:disable:no-bitwise
+        "|": { precedence: 1, func: (l, r) => l | u(r) },
+        "^": { precedence: 1, func: (l, r) => l ^ u(r) },
+        "&": { precedence: 1, func: (l, r) => l & u(r) },
+        // tslint:enable:no-bitwise
 
-        '<<': { precedence: 3, func: (l, r) => l << u(r) },
-        '>>>': { precedence: 3, func: (l, r) => l >>> u(r) },
-        '>>': { precedence: 3, func: (l, r) => l >> u(r) },
+        "===": { precedence: 2, func: (l, r) => l === u(r) },
+        "!==": { precedence: 2, func: (l, r) => l !== u(r) },
+        // tslint:disable-next-line:triple-equals
+        "==": { precedence: 2, func: (l, r) => l == u(r) },
+        // tslint:disable-next-line:triple-equals
+        "!=": { precedence: 2, func: (l, r) => l != u(r) },
 
-        '<=': { precedence: 4, func: (l, r) => l <= u(r) },
-        '>=': { precedence: 4, func: (l, r) => l >= u(r) },
-        '<': { precedence: 4, func: (l, r) => l < u(r) },
-        '>': { precedence: 4, func: (l, r) => l > u(r) },
+        // tslint:disable:no-bitwise
+        "<<": { precedence: 3, func: (l, r) => l << u(r) },
+        ">>>": { precedence: 3, func: (l, r) => l >>> u(r) },
+        ">>": { precedence: 3, func: (l, r) => l >> u(r) },
+        // tslint:enable:no-bitwise
 
-        '+': { precedence: 5, func: (l, r) => l + u(r) },
-        '-': { precedence: 5, func: (l, r) => l - u(r) },
+        "<=": { precedence: 4, func: (l, r) => l <= u(r) },
+        ">=": { precedence: 4, func: (l, r) => l >= u(r) },
+        "<": { precedence: 4, func: (l, r) => l < u(r) },
+        ">": { precedence: 4, func: (l, r) => l > u(r) },
 
-        '*': { precedence: 6, func: (l, r) => l * u(r) },
-        '/': { precedence: 6, func: (l, r) => l / u(r) },
-        '%': { precedence: 6, func: (l, r) => l % u(r) }
+        "+": { precedence: 5, func: (l, r) => l + u(r) },
+        "-": { precedence: 5, func: (l, r) => l - u(r) },
+
+        "*": { precedence: 6, func: (l, r) => l * u(r) },
+        "/": { precedence: 6, func: (l, r) => l / u(r) },
+        "%": { precedence: 6, func: (l, r) => l % u(r) },
     };
+    // tslint:enable:object-literal-sort-keys
 
     get knownIdentifiers() {
         return Object.getOwnPropertyNames(this.knowns);
     }
-    
+
     get unaryOperators() {
         return Object.getOwnPropertyNames(this.unary);
     }
@@ -56,53 +64,51 @@ export class Settings {
         return Object.getOwnPropertyNames(this.binary);
     }
 
-    addKnownValue(identifier: string, value) {
+    public addKnownValue(identifier: string, value) {
         this.knowns[identifier] = value;
         return this;
     }
 
-    containsKnown(identifier: string) {
+    public containsKnown(identifier: string) {
         return identifier in this.knowns;
     }
 
-    getKnownValue(identifier: string) {
+    public getKnownValue(identifier: string) {
         return this.knowns[identifier];
     }
 
-    addUnaryOperator(op: string, func: (value) => any) {
+    public addUnaryOperator(op: string, func: (value) => any) {
         this.unary[op] = func;
         return this;
     }
 
-    containsUnary(op: string) {
+    public containsUnary(op: string) {
         return this.unary[op] != null;
     }
-    
-    getUnaryOperator(op: string) {
+
+    public getUnaryOperator(op: string) {
         return this.unary[op];
     }
 
-    addBinaryOperator(op: string, func: (left, right) => any, precedence = 7) {
-        this.binary[op] = {precedence, func};
+    public addBinaryOperator(op: string, func: (left, right) => any, precedence = 7) {
+        this.binary[op] = { precedence, func };
         return this;
     }
 
-    containsBinary(op: string) {
+    public containsBinary(op: string) {
         return this.binary[op] != null;
     }
 
-    getBinaryOperator(op: string) {
+    public getBinaryOperator(op: string) {
         return this.binary[op];
     }
-    
-    static default = new Settings();
 }
 
 export interface BinaryOperatorInfo {
     precedence: number;
-    func: (left, right: () => any) => any | any;
+    func: (left, right: () => any) => any | any;
 }
 
 function u(v) {
-    return typeof v === 'function' ? v() : v;
+    return typeof v === "function" ? v() : v;
 }

@@ -1,11 +1,11 @@
+import { Settings } from "./Settings";
 import {
-    ExpressionType, Expression,
-    LiteralExpression, VariableExpression, UnaryExpression,
-    GroupExpression, AssignExpression, ObjectExpression, ArrayExpression,
-    BinaryExpression, MemberExpression, IndexerExpression, FuncExpression,
-    CallExpression, TernaryExpression
-} from './shared';
-import { Settings } from './Settings';
+    ArrayExpression, AssignExpression,
+    BinaryExpression, CallExpression, Expression,
+    ExpressionType, FuncExpression, GroupExpression, IndexerExpression,
+    LiteralExpression, MemberExpression, ObjectExpression, TernaryExpression,
+    UnaryExpression, VariableExpression,
+} from "./shared";
 
 export function tokenize<T extends Expression = Expression>(exp: string, settings?: Settings): T {
     return new Tokenizer(exp, settings).process() as T;
@@ -13,19 +13,62 @@ export function tokenize<T extends Expression = Expression>(exp: string, setting
 
 export class Tokenizer {
 
-    constructor(protected readonly exp: string, protected readonly settings = Settings.default) {
-        this.separator = '.';
+    public static literalExp(value) {
+        return { type: ExpressionType.Literal, value } as LiteralExpression;
+    }
 
-        this.len = exp.length;
-        this._idx = 0;
+    public static variableExp(name: string) {
+        return { type: ExpressionType.Variable, name } as VariableExpression;
+    }
 
-        this._cd = exp.charCodeAt(0);
-        this._ch = exp[0];
+    public static unaryExp(operator: string, target: Expression) {
+        return { type: ExpressionType.Unary, target, operator } as UnaryExpression;
+    }
+
+    public static groupExp(expressions: Expression[]) {
+        return { type: ExpressionType.Group, expressions } as GroupExpression;
+    }
+
+    public static assignExp(member: string, right: Expression) {
+        return { type: ExpressionType.Assign, name: member, right } as AssignExpression;
+    }
+
+    public static objectExp(members: AssignExpression[]) {
+        return { type: ExpressionType.Object, members } as ObjectExpression;
+    }
+
+    public static arrayExp(items: Expression[]) {
+        return { type: ExpressionType.Array, items } as ArrayExpression;
+    }
+
+    public static binaryExp(operator: string, left: Expression, right: Expression) {
+        return { type: ExpressionType.Binary, operator, left, right } as BinaryExpression;
+    }
+
+    public static memberExp(owner: Expression, name: string) {
+        return { type: ExpressionType.Member, owner, name } as MemberExpression;
+    }
+
+    public static indexerExp(owner: Expression, key: Expression) {
+        return { type: ExpressionType.Indexer, owner, key } as IndexerExpression;
+    }
+
+    public static funcExp(parameters: string[], body: Expression) {
+        return { type: ExpressionType.Func, parameters, body } as FuncExpression;
+    }
+
+    public static callExp(callee: Expression, args: Expression[]) {
+        return { type: ExpressionType.Call, callee, args } as CallExpression;
+    }
+
+    public static ternaryExp(predicate: Expression, whenTrue: Expression, whenFalse: Expression) {
+        return { type: ExpressionType.Ternary, predicate, whenTrue, whenFalse } as TernaryExpression;
     }
 
     protected separator: string;
     protected readonly len: number;
 
+    // tslint:disable:variable-name
     private _idx: number;
     protected get idx() { return this._idx; }
 
@@ -34,13 +77,28 @@ export class Tokenizer {
 
     private _ch: string;
     protected get ch() { return this._ch; }
+    // tslint:enable:variable-name
+
+    constructor(protected readonly exp: string, protected readonly settings = Settings.default) {
+        this.separator = ".";
+
+        this.len = exp.length;
+        this._idx = 0;
+
+        this._cd = exp.charCodeAt(0);
+        this._ch = exp[0];
+    }
 
     public process() {
-        if (!this.exp) return null;
+        if (!this.exp) {
+            return null;
+        }
 
         const e = this.getExp();
 
-        if (this.idx < this.len) throw new Error(`Cannot parse expression, stuck at ${this.idx}`);
+        if (this.idx < this.len) {
+            throw new Error(`Cannot parse expression, stuck at ${this.idx}`);
+        }
 
         return e;
     }
@@ -55,7 +113,9 @@ export class Tokenizer {
             || this.tryObject()
             || this.tryArray();
 
-        if (!e) return e;
+        if (!e) {
+            return e;
+        }
         e = this.tryKnown(e) || e;
 
         let r: Expression;
@@ -78,7 +138,7 @@ export class Tokenizer {
         const that = this;
 
         function tryNumeric() {
-            let n = '';
+            let n = "";
 
             function x() {
                 while (that.isNumber()) {
@@ -94,8 +154,9 @@ export class Tokenizer {
             }
 
             if (n) {
-                if (that.isVariableStart())
+                if (that.isVariableStart()) {
                     throw new Error(`Unexpected character (${that.ch}) at index ${that.idx}`);
+                }
 
                 return Tokenizer.literalExp(Number(n));
             }
@@ -104,15 +165,19 @@ export class Tokenizer {
         }
 
         function tryString() {
-            let c = that.ch, inter;
-            if (c === '`') {
+            let c = that.ch;
+            let inter;
+            if (c === "`") {
                 inter = true;
+            } else if (c !== '"' && c !== "'") {
+                return null;
             }
-            else if (c !== '"' && c !== "'") return null;
 
-            const q = c, es: Expression[] = [];
-            let s = '';
+            const q = c;
+            const es: Expression[] = [];
+            let s = "";
 
+            // tslint:disable-next-line:no-conditional-assignment
             while (c = that.move()) {
                 if (c === q) {
                     that.move();
@@ -122,37 +187,38 @@ export class Tokenizer {
                             es.push(Tokenizer.literalExp(s));
                         }
 
-                        return es.reduce((p, n) => Tokenizer.binaryExp('+', p, n), Tokenizer.literalExp(''));
+                        return es.reduce((p, n) => Tokenizer.binaryExp("+", p, n), Tokenizer.literalExp(""));
                     }
 
                     return Tokenizer.literalExp(s);
                 }
 
-                if (c === '\\') {
+                if (c === "\\") {
                     c = that.move();
                     switch (c) {
-                        case 'b': s += '\b'; break;
-                        case 'f': s += '\f'; break;
-                        case 'n': s += '\n'; break;
-                        case 'r': s += '\r'; break;
-                        case 't': s += '\t'; break;
-                        case 'v': s += '\x0B'; break;
-                        case '0': s += '\0'; break;
-                        case '\\': s += '\\'; break;
+                        case "b": s += "\b"; break;
+                        case "f": s += "\f"; break;
+                        case "n": s += "\n"; break;
+                        case "r": s += "\r"; break;
+                        case "t": s += "\t"; break;
+                        case "v": s += "\x0B"; break;
+                        case "0": s += "\0"; break;
+                        case "\\": s += "\\"; break;
                         case "'": s += "'"; break;
                         case '"': s += '"'; break;
-                        default: s += '\\' + c; break;
+                        default: s += "\\" + c; break;
                     }
-                } else if (inter && that.get('${')) {
+                } else if (inter && that.get("${")) {
                     if (s) {
                         es.push(Tokenizer.literalExp(s));
-                        s = '';
+                        s = "";
                     }
                     es.push(that.getExp());
-                    that.skip()
+                    that.skip();
 
-                    if (that.ch !== '}')
+                    if (that.ch !== "}") {
                         throw new Error(`Unterminated template literal at ${that.idx}`);
+                    }
                 } else {
                     s += c;
                 }
@@ -165,7 +231,7 @@ export class Tokenizer {
     }
 
     protected getVariableName() {
-        let v = '';
+        let v = "";
 
         if (this.isVariableStart()) {
             do {
@@ -183,12 +249,12 @@ export class Tokenizer {
     }
 
     protected tryUnary() {
-        const u = this.settings.unaryOperators.find(u => this.get(u));
-        return u ? Tokenizer.unaryExp(u, this.getExp()) : null;
+        const op = this.settings.unaryOperators.find((u) => this.get(u));
+        return op ? Tokenizer.unaryExp(op, this.getExp()) : null;
     }
 
     protected tryGroup() {
-        return this.get('(') ? Tokenizer.groupExp(this.getGroup()) : null;
+        return this.get("(") ? Tokenizer.groupExp(this.getGroup()) : null;
     }
 
     protected getGroup() {
@@ -198,51 +264,56 @@ export class Tokenizer {
             if (e) {
                 es.push(e);
             }
-        } while (this.get(','));
+        } while (this.get(","));
 
-        this.to(')');
+        this.to(")");
 
         return es;
     }
 
     protected tryObject() {
-        if (!this.get('{')) return null;
+        if (!this.get("{")) {
+            return null;
+        }
 
         const es: AssignExpression[] = [];
         do {
             this.skip();
             const ve = this.getExp() as VariableExpression;
-            if (ve.type !== ExpressionType.Variable && ve.type !== ExpressionType.Member)
+            if (ve.type !== ExpressionType.Variable && ve.type !== ExpressionType.Member) {
                 throw new Error(`Invalid assignment at ${this.idx}`);
+            }
 
             this.skip();
-            if (this.get(':')) {
-                if (ve.type !== ExpressionType.Variable)
+            if (this.get(":")) {
+                if (ve.type !== ExpressionType.Variable) {
                     throw new Error(`Invalid assignment at ${this.idx}`);
+                }
 
                 this.skip();
 
                 es.push(Tokenizer.assignExp(ve.name, this.getExp()));
-            }
-            else {
+            } else {
                 es.push(Tokenizer.assignExp(ve.name, ve));
             }
-        } while (this.get(','));
+        } while (this.get(","));
 
-        this.to('}');
+        this.to("}");
 
         return Tokenizer.objectExp(es);
     }
 
     protected tryArray() {
-        if (!this.get('[')) return null;
+        if (!this.get("[")) {
+            return null;
+        }
 
         const es: Expression[] = [];
         do {
             es.push(this.getExp());
-        } while (this.get(','));
+        } while (this.get(","));
 
-        this.to(']');
+        this.to("]");
 
         return Tokenizer.arrayExp(es);
     }
@@ -250,48 +321,58 @@ export class Tokenizer {
     protected tryKnown(e: Expression) {
         if (e.type === ExpressionType.Variable) {
             const le = e as VariableExpression;
-            if (this.settings.containsKnown(le.name))
+            if (this.settings.containsKnown(le.name)) {
                 return Tokenizer.literalExp(this.settings.getKnownValue(le.name));
+            }
         }
 
         return null;
     }
 
     protected tryMember(e: Expression) {
-        if (!this.get('.')) return null;
+        if (!this.get(".")) {
+            return null;
+        }
 
         this.skip();
         const v = this.getVariableName();
-        if (!v) throw new Error(`Invalid member identifier at ${this.idx}`);
+        if (!v) {
+            throw new Error(`Invalid member identifier at ${this.idx}`);
+        }
 
         return Tokenizer.memberExp(e, v);
     }
 
     protected tryIndexer(e: Expression) {
-        if (!this.get('[')) return null;
+        if (!this.get("[")) {
+            return null;
+        }
 
         this.skip();
         const k = this.getExp();
-        if (k == null) throw new Error(`Invalid indexer identifier at ${this.idx}`);
+        if (k == null) {
+            throw new Error(`Invalid indexer identifier at ${this.idx}`);
+        }
 
-        this.to(']');
+        this.to("]");
 
         return Tokenizer.indexerExp(e, k);
     }
 
     protected tryFunc(e: Expression) {
-        if (this.get('=>'))
+        if (this.get("=>")) {
             return Tokenizer.funcExp(this.getParameters(e), this.getExp());
+        }
 
-        if (e.type === ExpressionType.Variable && (e as VariableExpression).name === 'function') {
+        if (e.type === ExpressionType.Variable && (e as VariableExpression).name === "function") {
             const parameters = this.getParameters(this.getExp());
-            this.to('{');
+            this.to("{");
             this.skip();
-            this.get('return');
+            this.get("return");
 
             const body = this.getExp();
-            this.get(';');
-            this.to('}');
+            this.get(";");
+            this.to("}");
 
             return Tokenizer.funcExp(parameters, body);
         }
@@ -302,22 +383,24 @@ export class Tokenizer {
     protected getParameters(e: Expression) {
         if (e.type === ExpressionType.Group) {
             const ge = e as GroupExpression;
-            return ge.expressions.map(x => {
-                if (x.type !== ExpressionType.Variable)
+            return ge.expressions.map((x) => {
+                if (x.type !== ExpressionType.Variable) {
                     throw new Error(`Invalid parameter at ${this.idx}`);
+                }
 
                 return (x as VariableExpression).name;
             });
         }
 
-        if (e.type !== ExpressionType.Variable)
+        if (e.type !== ExpressionType.Variable) {
             throw new Error(`Invalid parameter at ${this.idx}`);
+        }
 
         return [(e as VariableExpression).name];
     }
 
     protected tryCall(e: Expression) {
-        return this.get('(') ? this.getCall(e) : null;
+        return this.get("(") ? this.getCall(e) : null;
     }
 
     protected getCall(e: Expression) {
@@ -327,24 +410,29 @@ export class Tokenizer {
     }
 
     protected tryTernary(e: Expression) {
-        if (!this.get('?')) return null;
+        if (!this.get("?")) {
+            return null;
+        }
 
         const whenTrue = this.getExp();
-        this.to(':');
+        this.to(":");
         const whenFalse = this.getExp();
 
         return Tokenizer.ternaryExp(e, whenTrue, whenFalse);
     }
 
     protected tryBinary(e: Expression) {
-        const op = this.settings.binaryOperators.find(b => this.get(b));
+        const op = this.settings.binaryOperators.find((b) => this.get(b));
 
-        if (!op) return null;
+        if (!op) {
+            return null;
+        }
 
         const right = this.getExp();
 
-        if (right.type === ExpressionType.Binary)
+        if (right.type === ExpressionType.Binary) {
             return this.fixPrecedence(e, op, right as BinaryExpression);
+        }
 
         return Tokenizer.binaryExp(op, e, right);
     }
@@ -369,18 +457,20 @@ export class Tokenizer {
 
     protected move(count: number = 1) {
         this._idx += count;
-        this._cd = this.exp.charCodeAt(this.idx)
+        this._cd = this.exp.charCodeAt(this.idx);
         return this._ch = this.exp.charAt(this.idx);
     }
 
     protected get(s: string) {
-        if (this.eq(this.idx, s))
+        if (this.eq(this.idx, s)) {
             return !!this.move(s.length);
+        }
 
         return false;
     }
 
     protected skip() {
+        // tslint:disable-next-line:curly
         while (this.isSpace() && this.move());
     }
 
@@ -391,8 +481,9 @@ export class Tokenizer {
     protected to(c: string) {
         this.skip();
 
-        if (!this.eq(this.idx, c))
+        if (!this.eq(this.idx, c)) {
             throw new Error(`Expected ${c} at index ${this.idx}, found ${this.exp[this.idx]}`);
+        }
 
         this.move(c.length);
     }
@@ -404,57 +495,5 @@ export class Tokenizer {
         return p2 < p1
             ? Tokenizer.binaryExp(right.operator, Tokenizer.binaryExp(leftOp, left, right.left), right.right)
             : Tokenizer.binaryExp(leftOp, left, right);
-    }
-
-    static literalExp(value) {
-        return { type: ExpressionType.Literal, value } as LiteralExpression;
-    }
-    
-    static variableExp(name: string) {
-        return { type: ExpressionType.Variable, name } as VariableExpression;
-    }
-    
-    static unaryExp(operator: string, target: Expression) {
-        return { type: ExpressionType.Unary, target, operator } as UnaryExpression;
-    }
-    
-    static groupExp(expressions: Expression[]) {
-        return { type: ExpressionType.Group, expressions } as GroupExpression;
-    }
-    
-    static assignExp(member: string, right: Expression) {
-        return { type: ExpressionType.Assign, name: member, right } as AssignExpression;
-    }
-    
-    static objectExp(members: AssignExpression[]) {
-        return { type: ExpressionType.Object, members } as ObjectExpression;
-    }
-    
-    static arrayExp(items: Expression[]) {
-        return { type: ExpressionType.Array, items } as ArrayExpression;
-    }
-    
-    static binaryExp(operator: string, left: Expression, right: Expression) {
-        return { type: ExpressionType.Binary, operator, left, right } as BinaryExpression;
-    }
-    
-    static memberExp(owner: Expression, name: string) {
-        return { type: ExpressionType.Member, owner, name } as MemberExpression;
-    }
-    
-    static indexerExp(owner: Expression, key: Expression) {
-        return { type: ExpressionType.Indexer, owner, key } as IndexerExpression;
-    }
-    
-    static funcExp(parameters: string[], body: Expression) {
-        return { type: ExpressionType.Func, parameters, body } as FuncExpression;
-    }
-    
-    static callExp(callee: Expression, args: Expression[]) {
-        return { type: ExpressionType.Call, callee, args } as CallExpression;
-    }
-    
-    static ternaryExp(predicate: Expression, whenTrue: Expression, whenFalse: Expression) {
-        return { type: ExpressionType.Ternary, predicate, whenTrue, whenFalse } as TernaryExpression;
     }
 }
