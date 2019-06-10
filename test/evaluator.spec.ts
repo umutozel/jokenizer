@@ -1,5 +1,7 @@
 import { expect } from 'chai';
 import 'mocha';
+
+import './shim';
 import {
     tokenize, evaluate,  Settings,
     ObjectExpression, UnaryExpression, BinaryExpression,

@@ -1,6 +1,3 @@
-import find = require('array.prototype.find');
-find.shim();
-
 export * from './lib/evaluator';
 export * from './lib/ExpressionVisitor';
 export * from './lib/Settings';
