@@ -131,5 +131,9 @@ evaluate(tokenize('test(42, a)'), { test: (a, b) => a * b }, { a: 2 });     //  
 evaluate(tokenize('check ? 42 : 21'), { check: true });     //  42
 ```
 
+## Old Browsers
+
+Jokenizer uses [array.prototype.find](https://www.npmjs.com/package/array.prototype.find) package for running Karma tests on Internet Explorer. Take a look at [test/shim.ts](https://github.com/umutozel/jokenizer/blob/master/test/shim.ts).
+
 # License
 Jokenizer is under the [MIT License](LICENSE).
