@@ -1,6 +1,14 @@
 {
-    "extends": "tslint:recommended",
+    "extends": [
+        "tslint:recommended",
+        "tslint-no-unused-expression-chai"
+    ],
     "rules": {
         "interface-name": [false]
+    },
+    "linterOptions": {
+        "exclude": [
+            "node_modules"
+        ]
     }
 }
