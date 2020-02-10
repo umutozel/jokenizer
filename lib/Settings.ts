@@ -61,7 +61,7 @@ export class Settings {
     }
 
     get binaryOperators() {
-        return Object.getOwnPropertyNames(this.binary);
+        return Object.getOwnPropertyNames(this.binary).sort((b1, b2) => b2.length - b1.length);
     }
 
     public addKnownValue(identifier: string, value) {
@@ -106,7 +106,7 @@ export class Settings {
 
 export interface BinaryOperatorInfo {
     precedence: number;
-    func: (left, right: () => any) => any | any;
+    func: (left, right: () => any) => any;
 }
 
 function u(v) {
