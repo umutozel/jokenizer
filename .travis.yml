@@ -1,17 +1,17 @@
 language: node_js
 node_js:
-- 10
+- 18
 - stable
 git:
   depth: 1
 branches:
   only:
-  - master
+  - main
 after_success:
-- npm run coveralls
+- yarn coveralls
 deploy:
   on:
-    branch: master
+    branch: main
     tags: true
   provider: npm
   email: umutozel@gmail.com
