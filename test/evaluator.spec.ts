@@ -2,11 +2,10 @@ import { expect } from "chai";
 import "mocha";
 
 import {
-    BinaryExpression, evaluate,  ExpressionType,
+    BinaryExpression, evaluate, ExpressionType,
     GroupExpression, ObjectExpression, Settings,
     tokenize, UnaryExpression,
 } from "../index";
-import "./shim";
 
 describe("Evaluation tests", () => {
 

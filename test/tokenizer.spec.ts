@@ -9,7 +9,6 @@ import {
     MemberExpression, ObjectExpression, TernaryExpression,
     tokenize, UnaryExpression, VariableExpression,
 } from "../index";
-import "./shim";
 
 describe("Tokenizer simple call to check ExpressionType", () => {
 

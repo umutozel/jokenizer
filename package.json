@@ -33,7 +33,6 @@
   "devDependencies": {
     "@types/chai": "^4.1.1",
     "@types/mocha": "^2.2.46",
-    "array.prototype.find": "^2.0.4",
     "chai": "^4.1.2",
     "coveralls": "^3.0.2",
     "mocha": "^8.1.1",
