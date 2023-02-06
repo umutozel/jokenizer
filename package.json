@@ -3,6 +3,7 @@
   "version": "0.4.5",
   "description": "Tokenize javascript expressions.",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "keywords": [
     "expression",
     "parser",
@@ -14,7 +15,7 @@
     "dist",
     "lib",
     "index.ts",
-    "readme.md"
+    "README.md"
   ],
   "repository": {
     "type": "git",
