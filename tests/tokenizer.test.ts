@@ -11,7 +11,7 @@ describe("Tokenizer simple call to check ExpressionType", () => {
 
     it("should return null", () => {
         const exp = tokenize("");
-        expect(exp).toBeNull;
+        expect(exp).toBe(null);
     });
 
     it("should not be able to parse", () => {
