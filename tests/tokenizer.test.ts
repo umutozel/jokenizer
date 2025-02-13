@@ -152,13 +152,13 @@ describe("Tokenizer simple call to check ExpressionType", () => {
     });
 
     it("should return FuncExpression for function", () => {
-        const e = tokenize<FuncExpression>("function(a, b) { return a < b; }");
-        expect(e.type).toBe(ExpressionType.Func);
-        expect(e.parameters.length).toBe(2);
-        expect(e.parameters).toEqual(["a", "b"]);
-        expect(e.body.type).toBe(ExpressionType.Binary);
+        const fe = tokenize<FuncExpression>("function(a, b) { return a < b; }");
+        expect(fe.type).toBe(ExpressionType.Func);
+        expect(fe.parameters).toHaveLength(2);
+        expect(fe.parameters).toEqual(["a", "b"]);
+        expect(fe.body.type).toBe(ExpressionType.Binary);
 
-        const be = e.body as BinaryExpression;
+        const be = fe.body as BinaryExpression;
         expect(be.operator).toBe("<");
 
         expect(be.left.type).toBe(ExpressionType.Variable);

@@ -19,7 +19,7 @@ export interface Expression {
 }
 
 export interface LiteralExpression extends Expression {
-    readonly value;
+    readonly value: any;
 }
 
 export interface VariableExpression extends Expression {

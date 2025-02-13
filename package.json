@@ -1,6 +1,6 @@
 {
   "name": "jokenizer",
-  "version": "0.4.5",
+  "version": "1.0.0",
   "description": "Tokenize javascript expressions.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,7 +20,7 @@
     "url": "https://github.com/umutozel/jokenizer"
   },
   "scripts": {
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint .",
     "test": "jest",
     "cover": "jest --coverage",
     "coveralls": "jest --coverage && coveralls < coverage/lcov.info",
@@ -30,11 +30,12 @@
   "author": "Umut Özel",
   "license": "MIT",
   "devDependencies": {
+    "@eslint/js": "^9.20.0",
     "@types/jest": "^29.5.14",
     "@typescript-eslint/eslint-plugin": "^8.24.0",
     "@typescript-eslint/parser": "^8.24.0",
     "coveralls": "^3.1.1",
-    "eslint": "^9.20.0",
+    "eslint": "9.20.0",
     "jest": "^29.7.0",
     "ts-jest": "^29.2.5",
     "ts-node": "^10.9.2",

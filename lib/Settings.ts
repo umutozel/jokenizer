@@ -7,7 +7,7 @@ export class Settings {
         "null": null,
         "true": true,
     };
-    private unary: { [op: string]: (value) => any } = {
+    private unary: { [op: string]: (value: any) => any } = {
         "!": (v) => !v,
         "+": (v) => +v,
         "-": (v) => -1 * v,
@@ -64,7 +64,7 @@ export class Settings {
         return Object.getOwnPropertyNames(this.binary).sort((b1, b2) => b2.length - b1.length);
     }
 
-    public addKnownValue(identifier: string, value) {
+    public addKnownValue(identifier: string, value: any) {
         this.knowns[identifier] = value;
         return this;
     }
@@ -77,7 +77,7 @@ export class Settings {
         return this.knowns[identifier];
     }
 
-    public addUnaryOperator(op: string, func: (value) => any) {
+    public addUnaryOperator(op: string, func: (value: any) => any) {
         this.unary[op] = func;
         return this;
     }
@@ -90,7 +90,7 @@ export class Settings {
         return this.unary[op];
     }
 
-    public addBinaryOperator(op: string, func: (left, right) => any, precedence = 7) {
+    public addBinaryOperator(op: string, func: (left: any, right: any) => any, precedence = 7) {
         this.binary[op] = { precedence, func };
         return this;
     }
@@ -106,9 +106,9 @@ export class Settings {
 
 export interface BinaryOperatorInfo {
     precedence: number;
-    func: (left, right: () => any) => any;
+    func: (left: any, right: () => any) => any;
 }
 
-function u(v) {
+function u(v: any) {
     return typeof v === "function" ? v() : v;
 }

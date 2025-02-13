@@ -33,13 +33,15 @@ export class ExpressionVisitor {
             case ExpressionType.Unary: return this.visitUnary(exp as any, scopes);
             case ExpressionType.Variable: return this.visitVariable(exp as any, scopes);
             case ExpressionType.Group:
-                const gexp = exp as GroupExpression;
-                if (gexp.expressions.length === 1) {
-                    return this.visit(gexp.expressions[0], scopes);
+                const groupExp = exp as GroupExpression;
+                if (groupExp.expressions.length === 1) {
+                    return this.visit(groupExp.expressions[0], scopes);
                 }
+            /* eslint-disable no-fallthrough */
             case ExpressionType.Assign:
             case ExpressionType.Func:
                 throw new Error(`Invalid ${exp.type} expression usage`);
+            /* eslint-enable no-fallthrough */
             default: throw new Error(`Unsupported ExpressionType ${exp.type}`);
         }
     }
@@ -62,7 +64,7 @@ export class ExpressionVisitor {
     }
 
     protected visitFunc(exp: FuncExpression, scopes: any[]) {
-        return (...args) => {
+        return (...args: any[]) => {
             const s = {};
             exp.parameters.forEach((p, i) => s[p] = args[i]);
             return this.visit(exp.body, [s, ...scopes]);
@@ -76,7 +78,7 @@ export class ExpressionVisitor {
         return o != null ? o[k] : null;
     }
 
-    protected visitLiteral(exp: LiteralExpression, scopes: any[]) {
+    protected visitLiteral(exp: LiteralExpression, _scopes: any[]) {
         return exp.value;
     }
 
@@ -111,7 +113,7 @@ export class ExpressionVisitor {
         return this.readVar(exp.name, scopes);
     }
 
-    protected evalBinary(leftValue, operator: string, right: Expression, scopes: any[]) {
+    protected evalBinary(leftValue: any, operator: string, right: Expression, scopes: any[]) {
         const op = this.settings.getBinaryOperator(operator);
         if (!op) {
             throw new Error(`Unknown binary operator ${operator}`);
@@ -133,7 +135,7 @@ export class ExpressionVisitor {
         return (v && v.bind && typeof v.bind === "function") ? v.bind(scope) : v;
     }
 
-    protected tryFixDate(v1, v2): [any, any] {
+    protected tryFixDate(v1: any, v2: any): [any, any] {
         if (Object.prototype.toString.call(v1) === "[object Date]") {
             v1 = v1.getTime();
             if (typeof v2 === "string") {

@@ -13,7 +13,7 @@ export function tokenize<T extends Expression = Expression>(exp: string, setting
 
 export class Tokenizer {
 
-    public static literalExp(value) {
+    public static literalExp(value: any) {
         return { type: ExpressionType.Literal, value } as LiteralExpression;
     }
 
@@ -166,7 +166,7 @@ export class Tokenizer {
 
         function tryString() {
             let c = that.ch;
-            let inter;
+            let inter: any;
             if (c === "`") {
                 inter = true;
             } else if (c !== '"' && c !== "'") {
@@ -471,11 +471,11 @@ export class Tokenizer {
 
     protected skip() {
         // tslint:disable-next-line:curly
-        while (this.isSpace() && this.move());
+        while (this.isSpace() && this.move()) {}
     }
 
     protected eq(idx: number, target: string) {
-        return this.exp.substr(idx, target.length) === target;
+        return this.exp.substring(idx, idx + target.length) === target;
     }
 
     protected to(c: string) {

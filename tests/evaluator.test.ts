@@ -127,7 +127,7 @@ describe("Evaluation tests", () => {
         const v1 = evaluate(tokenize("test()"), { test: () => 42 });
         expect(v1).toBe(42);
 
-        const v2 = evaluate(tokenize("test(42, a)"), { test: (a, b) => a * b }, { a: 2 });
+        const v2 = evaluate(tokenize("test(42, a)"), { test: (a: any, b: any) => a * b }, { a: 2 });
         expect(v2).toBe(84);
 
         const v3 = evaluate(tokenize("find(i => i > 2)"), [1, 2, 3, 4, 5]);
