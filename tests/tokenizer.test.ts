@@ -7,7 +7,7 @@ import {
     tokenize, UnaryExpression, VariableExpression,
 } from "../index";
 
-describe("Tokenizer simple call to check ExpressionType", () => {
+describe("Tokenizer tests", () => {
 
     it("should return null", () => {
         const exp = tokenize("");
