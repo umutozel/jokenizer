@@ -25,6 +25,7 @@ module.exports = [
         rules: {
             ...js.configs.recommended.rules,
             ...ts.configs.recommended.rules,
+            "constructor-super": "error",
             "@typescript-eslint/no-explicit-any": "off",
         },
     }
