@@ -4,7 +4,7 @@
 [![codecov](https://codecov.io/gh/umutozel/jokenizer/graph/badge.svg?token=MXSq1ImgQJ)](https://codecov.io/gh/umutozel/jokenizer)
 <a href="https://snyk.io/test/npm/jokenizer"><img src="https://snyk.io/test/npm/jokenizer/badge.svg" alt="Known Vulnerabilities" data-canonical-src="https://snyk.io/test/npm/jokenizer" style="max-width:100%;"></a>
 
-[![npm version](https://badge.fury.io/js/jokenizer.svg)](https://badge.fury.io/js/jokenizer)
+[![npm version](https://img.shields.io/npm/v/jokenizer)](https://www.npmjs.com/package/jokenizer)
 [![npm downloads](https://img.shields.io/npm/dm/jokenizer.svg)](https://www.npmjs.com/package/jokenizer)
 
 [![GitHub issues](https://img.shields.io/github/issues/umutozel/Jokenizer.Net.svg)](https://github.com/umutozel/Jokenizer.Net/issues)
