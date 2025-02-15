@@ -32,18 +32,19 @@ export class ExpressionVisitor {
             case ExpressionType.Ternary: return this.visitTernary(exp as any, scopes);
             case ExpressionType.Unary: return this.visitUnary(exp as any, scopes);
             case ExpressionType.Variable: return this.visitVariable(exp as any, scopes);
-            case ExpressionType.Group:
-                const groupExp = exp as GroupExpression;
-                if (groupExp.expressions.length === 1) {
-                    return this.visit(groupExp.expressions[0], scopes);
-                }
-            /* eslint-disable no-fallthrough */
+            case ExpressionType.Group: return this.visitGroup(exp as GroupExpression, scopes);
             case ExpressionType.Assign:
             case ExpressionType.Func:
                 throw new Error(`Invalid ${exp.type} expression usage`);
-            /* eslint-enable no-fallthrough */
             default: throw new Error(`Unsupported ExpressionType ${exp.type}`);
         }
+    }
+
+    protected visitGroup(exp: GroupExpression, scopes: any[]) {
+        if (exp.expressions.length === 1)
+            return this.visit(exp.expressions[0], scopes);
+
+        throw new Error(`Group Expression can contain only one expression`);
     }
 
     protected visitArray(exp: ArrayExpression, scopes: any[]) {
@@ -78,6 +79,7 @@ export class ExpressionVisitor {
         return o != null ? o[k] : null;
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     protected visitLiteral(exp: LiteralExpression, _scopes: any[]) {
         return exp.value;
     }

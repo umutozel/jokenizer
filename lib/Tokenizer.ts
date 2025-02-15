@@ -68,7 +68,6 @@ export class Tokenizer {
     protected separator: string;
     protected readonly len: number;
 
-    // tslint:disable:variable-name
     private _idx: number;
     protected get idx() { return this._idx; }
 
@@ -77,7 +76,6 @@ export class Tokenizer {
 
     private _ch: string;
     protected get ch() { return this._ch; }
-    // tslint:enable:variable-name
 
     constructor(protected readonly exp: string, protected readonly settings = Settings.default) {
         this.separator = ".";
@@ -135,37 +133,36 @@ export class Tokenizer {
     }
 
     protected tryLiteral() {
-        const that = this;
 
-        function tryNumeric() {
+        const tryNumeric = () => {
             let n = "";
 
-            function x() {
-                while (that.isNumber()) {
-                    n += that.ch;
-                    that.move();
+            const x = () => {
+                while (this.isNumber()) {
+                    n += this.ch;
+                    this.move();
                 }
-            }
+            };
 
             x();
-            if (that.get(that.separator)) {
-                n += that.separator;
+            if (this.get(this.separator)) {
+                n += this.separator;
                 x();
             }
 
             if (n) {
-                if (that.isVariableStart()) {
-                    throw new Error(`Unexpected character (${that.ch}) at index ${that.idx}`);
+                if (this.isVariableStart()) {
+                    throw new Error(`Unexpected character (${this.ch}) at index ${this.idx}`);
                 }
 
                 return Tokenizer.literalExp(Number(n));
             }
 
             return null;
-        }
+        };
 
-        function tryString() {
-            let c = that.ch;
+        const tryString = () => {
+            let c = this.ch;
             let inter: any;
             if (c === "`") {
                 inter = true;
@@ -177,10 +174,9 @@ export class Tokenizer {
             const es: Expression[] = [];
             let s = "";
 
-            // tslint:disable-next-line:no-conditional-assignment
-            while (c = that.move()) {
+            while ((c = this.move())) {
                 if (c === q) {
-                    that.move();
+                    this.move();
 
                     if (es.length) {
                         if (s) {
@@ -194,7 +190,7 @@ export class Tokenizer {
                 }
 
                 if (c === "\\") {
-                    c = that.move();
+                    c = this.move();
                     switch (c) {
                         case "b": s += "\b"; break;
                         case "f": s += "\f"; break;
@@ -208,16 +204,16 @@ export class Tokenizer {
                         case '"': s += '"'; break;
                         default: s += "\\" + c; break;
                     }
-                } else if (inter && that.get("${")) {
+                } else if (inter && this.get("${")) {
                     if (s) {
                         es.push(Tokenizer.literalExp(s));
                         s = "";
                     }
-                    es.push(that.getExp());
-                    that.skip();
+                    es.push(this.getExp());
+                    this.skip();
 
-                    if (that.ch !== "}") {
-                        throw new Error(`Unterminated template literal at ${that.idx}`);
+                    if (this.ch !== "}") {
+                        throw new Error(`Unterminated template literal at ${this.idx}`);
                     }
                 } else {
                     s += c;
@@ -225,7 +221,7 @@ export class Tokenizer {
             }
 
             throw new Error(`Unclosed quote after ${s}`);
-        }
+        };
 
         return tryNumeric() || tryString();
     }
@@ -470,7 +466,7 @@ export class Tokenizer {
     }
 
     protected skip() {
-        // tslint:disable-next-line:curly
+        // eslint-disable-next-line no-empty
         while (this.isSpace() && this.move()) {}
     }
 
