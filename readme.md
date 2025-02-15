@@ -1,7 +1,7 @@
 # Jokenizer - JavaScript Expression Parser and Evaluator
 
-[![Build Status](https://api.travis-ci.com/umutozel/jokenizer.svg?branch=main)](https://travis-ci.com/github/umutozel/jokenizer)
-[![Coverage Status](https://coveralls.io/repos/github/umutozel/jokenizer/badge.svg?branch=main)](https://coveralls.io/github/umutozel/jokenizer?branch=main)
+[![Build and Test](https://github.com/umutozel/jokenizer/actions/workflows/build.yml/badge.svg)](https://github.com/umutozel/jokenizer/actions/workflows/build.yml)
+[![codecov](https://codecov.io/gh/umutozel/jokenizer/graph/badge.svg?token=MXSq1ImgQJ)](https://codecov.io/gh/umutozel/jokenizer)
 [![npm version](https://badge.fury.io/js/jokenizer.svg)](https://badge.fury.io/js/jokenizer)
 <a href="https://snyk.io/test/npm/jokenizer"><img src="https://snyk.io/test/npm/jokenizer/badge.svg" alt="Known Vulnerabilities" data-canonical-src="https://snyk.io/test/npm/jokenizer" style="max-width:100%;"></a>
 [![GitHub issues](https://img.shields.io/github/issues/umutozel/Jokenizer.Net.svg)](https://github.com/umutozel/Jokenizer.Net/issues)
