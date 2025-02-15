@@ -1,4 +1,13 @@
-﻿jobs:
+﻿name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+jobs:
   build:
     runs-on: ubuntu-latest
     steps:
@@ -26,7 +35,7 @@
         run: |
           npx codecov
 
-      - name: Publish to npm if tag starts with "v"
+      - name: Publish to npm
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
           npm publish
