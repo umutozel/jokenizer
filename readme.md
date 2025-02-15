@@ -2,12 +2,13 @@
 
 [![Build and Test](https://github.com/umutozel/jokenizer/actions/workflows/build.yml/badge.svg)](https://github.com/umutozel/jokenizer/actions/workflows/build.yml)
 [![codecov](https://codecov.io/gh/umutozel/jokenizer/graph/badge.svg?token=MXSq1ImgQJ)](https://codecov.io/gh/umutozel/jokenizer)
+<a href="https://snyk.io/test/npm/jokenizer"><img src="https://snyk.io/test/npm/jokenizer/badge.svg" alt="Known Vulnerabilities" data-canonical-src="https://snyk.io/test/npm/jokenizer" style="max-width:100%;"></a>
+
 [![npm version](https://badge.fury.io/js/jokenizer.svg)](https://badge.fury.io/js/jokenizer)
 [![npm downloads](https://img.shields.io/npm/dm/jokenizer.svg)](https://www.npmjs.com/package/jokenizer)
-<a href="https://snyk.io/test/npm/jokenizer"><img src="https://snyk.io/test/npm/jokenizer/badge.svg" alt="Known Vulnerabilities" data-canonical-src="https://snyk.io/test/npm/jokenizer" style="max-width:100%;"></a>
+
 [![GitHub issues](https://img.shields.io/github/issues/umutozel/Jokenizer.Net.svg)](https://github.com/umutozel/Jokenizer.Net/issues)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/umutozel/Jokenizer.Net/main/LICENSE)
-
 [![GitHub stars](https://img.shields.io/github/stars/umutozel/jokenizer.net.svg?style=social&label=Star)](https://github.com/umutozel/jokenizer.net)
 [![GitHub forks](https://img.shields.io/github/forks/umutozel/jokenizer.net.svg?style=social&label=Fork)](https://github.com/umutozel/jokenizer.net)
 
