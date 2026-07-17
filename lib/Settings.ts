@@ -13,7 +13,10 @@ export class Settings {
         "~": (v) => ~v,
     };
     private binary: { [op: string]: BinaryOperatorInfo } = {
-        "&&": { precedence: 0, func: (l, r) => l && u(r) },
+        // && binds tighter than || (JS semantics: "a || b && c" is a || (b && c)).
+        // Kept between || (0) and the bitwise tier (1) so existing custom-operator
+        // precedences don't shift.
+        "&&": { precedence: 0.5, func: (l, r) => l && u(r) },
         "||": { precedence: 0, func: (l, r) => l || u(r) },
 
         "|": { precedence: 1, func: (l, r) => l | u(r) },

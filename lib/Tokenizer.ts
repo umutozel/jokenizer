@@ -246,7 +246,41 @@ export class Tokenizer {
 
     protected tryUnary() {
         const op = this.settings.unaryOperators.find((u) => this.get(u));
-        return op ? Tokenizer.unaryExp(op, this.getExp()) : null;
+        return op ? Tokenizer.unaryExp(op, this.getUnaryTarget()) : null;
+    }
+
+    /**
+     * A unary operator binds to the next primary expression plus its postfix
+     * chain (members, indexers, calls) — NOT to the whole remaining expression.
+     * Parsing via getExp made "-total < -300" come back as -(total < -300);
+     * binary and ternary continuation belongs to the caller's loop.
+     */
+    protected getUnaryTarget(): Expression {
+        this.skip();
+
+        let e: Expression = this.tryLiteral()
+            || this.tryVariable()
+            || this.tryUnary()
+            || this.tryGroup()
+            || this.tryObject()
+            || this.tryArray();
+
+        if (!e) {
+            return e;
+        }
+        e = this.tryKnown(e) || e;
+
+        let r: Expression;
+        do {
+            this.skip();
+
+            r = e;
+            e = this.tryMember(e)
+                || this.tryIndexer(e)
+                || this.tryCall(e);
+        } while (e);
+
+        return r;
     }
 
     protected tryGroup() {
@@ -484,12 +518,22 @@ export class Tokenizer {
         this.move(c.length);
     }
 
-    protected fixPrecedence(left: Expression, leftOp: string, right: BinaryExpression) {
+    protected fixPrecedence(left: Expression, leftOp: string, right: BinaryExpression): BinaryExpression {
         const p1 = this.settings.getBinaryOperator(leftOp).precedence;
         const p2 = this.settings.getBinaryOperator(right.operator).precedence;
 
-        return p2 < p1
-            ? Tokenizer.binaryExp(right.operator, Tokenizer.binaryExp(leftOp, left, right.left), right.right)
-            : Tokenizer.binaryExp(leftOp, left, right);
+        // Rotate when the right-side operator binds looser (a * (b + c) → (a*b)+c)
+        // OR equally tight — binary operators are left-associative, so "a - b - c"
+        // must become (a-b)-c, not a-(b-c). The rebuilt left side recurses because
+        // the right operand was parsed greedily: in "a - b - c - d" the incoming
+        // right is ((b-c)-d) and joining `a` with (b-c) needs the same repair.
+        if (p2 > p1) {
+            return Tokenizer.binaryExp(leftOp, left, right);
+        }
+
+        const newLeft = right.left.type === ExpressionType.Binary
+            ? this.fixPrecedence(left, leftOp, right.left as BinaryExpression)
+            : Tokenizer.binaryExp(leftOp, left, right.left);
+        return Tokenizer.binaryExp(right.operator, newLeft, right.right);
     }
 }

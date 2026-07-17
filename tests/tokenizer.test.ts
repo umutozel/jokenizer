@@ -1,7 +1,7 @@
 import {
     ArrayExpression,
     BinaryExpression,
-    CallExpression, ExpressionType, FuncExpression,
+    CallExpression, evaluate, ExpressionType, FuncExpression,
     IndexerExpression, LiteralExpression,
     MemberExpression, ObjectExpression, TernaryExpression,
     tokenize, UnaryExpression, VariableExpression,
@@ -252,5 +252,46 @@ describe("Tokenizer tests", () => {
 
         const le3 = re.right as LiteralExpression;
         expect(le3.value).toBe(3);
+    });
+
+    it("should parse equal-precedence chains left-associative", () => {
+        // (a - b) - c, not a - (b - c)
+        const e = tokenize<BinaryExpression>("a - b - c");
+        expect(e.operator).toBe("-");
+        expect(e.left.type).toBe(ExpressionType.Binary);
+        expect((e.left as BinaryExpression).operator).toBe("-");
+        expect(e.right.type).toBe(ExpressionType.Variable);
+
+        // evaluator agreement: 10 - 4 - 3 = 3 (right-assoc would give 9)
+        expect(evaluate(tokenize("10 - 4 - 3"))).toBe(3);
+        expect(evaluate(tokenize("100 / 10 / 5"))).toBe(2);
+        expect(evaluate(tokenize("10 - 4 + 3"))).toBe(9);
+        expect(evaluate(tokenize("1 - 2 - 3 - 4"))).toBe(-8);
+        // higher-precedence islands preserved: 1 + 2*3 + 4 = 11
+        expect(evaluate(tokenize("1 + 2 * 3 + 4"))).toBe(11);
+    });
+
+    it("should bind && tighter than ||", () => {
+        // a || (b && c), not (a || b) && c
+        expect(evaluate(tokenize("true || false && false"))).toBe(true);
+        expect(evaluate(tokenize("false && true || true"))).toBe(true);
+        const e = tokenize<BinaryExpression>("a || b && c");
+        expect(e.operator).toBe("||");
+        expect((e.right as BinaryExpression).operator).toBe("&&");
+    });
+
+    it("should bind unary to the next primary, not the whole expression", () => {
+        // -(total) < -(300), not -(total < 300)
+        const e = tokenize<BinaryExpression>("-total < -300");
+        expect(e.type).toBe(ExpressionType.Binary);
+        expect(e.operator).toBe("<");
+        expect(e.left.type).toBe(ExpressionType.Unary);
+        expect(e.right.type).toBe(ExpressionType.Unary);
+
+        expect(evaluate(tokenize("-4 + 6"))).toBe(2);
+        expect(evaluate(tokenize("!false && true"))).toBe(true);
+        // postfix chain still belongs to the unary target; grouping still works
+        expect(evaluate(tokenize("-(4 + 6)"))).toBe(-10);
+        expect(evaluate(tokenize("--5"))).toBe(5);
     });
 });
