@@ -1,4 +1,4 @@
-﻿name: CI/CD Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
@@ -7,17 +7,31 @@ on:
     tags:
       - 'v*'
 
+# npm trusted publishing (OIDC): the publish step mints a short-lived
+# token from this workflow's GitHub identity — no stored NPM_TOKEN, no
+# expiry. Requires the one-time counterpart on npmjs.com:
+# package jokenizer -> Settings -> Trusted Publisher ->
+# GitHub Actions / umutozel/jokenizer / build.yml
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
+
+      # Trusted publishing needs a recent npm CLI (>= 11.5); the bundled
+      # one may lag behind.
+      - name: Update npm
+        run: npm install -g npm@latest
 
       - name: Install dependencies
         run: npm install
@@ -33,5 +47,3 @@ jobs:
       - name: Publish to npm
         if: startsWith(github.ref, 'refs/tags/v')
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
