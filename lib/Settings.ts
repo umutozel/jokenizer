@@ -19,23 +19,27 @@ export class Settings {
         "&&": { precedence: 0.5, func: (l, r) => l && u(r) },
         "||": { precedence: 0, func: (l, r) => l || u(r) },
 
+        // Bitwise tier binds &, ^, | in that order (JS: & > ^ > |). Fractional
+        // slots keep the tier anchored at 1 so custom operators registered at
+        // any integer precedence stay in their original relative position.
         "|": { precedence: 1, func: (l, r) => l | u(r) },
-        "^": { precedence: 1, func: (l, r) => l ^ u(r) },
-        "&": { precedence: 1, func: (l, r) => l & u(r) },
+        "^": { precedence: 1.25, func: (l, r) => l ^ u(r) },
+        "&": { precedence: 1.5, func: (l, r) => l & u(r) },
 
         "===": { precedence: 2, func: (l, r) => l === u(r) },
         "!==": { precedence: 2, func: (l, r) => l !== u(r) },
         "==": { precedence: 2, func: (l, r) => l == u(r) },
         "!=": { precedence: 2, func: (l, r) => l != u(r) },
 
-        "<<": { precedence: 3, func: (l, r) => l << u(r) },
-        ">>>": { precedence: 3, func: (l, r) => l >>> u(r) },
-        ">>": { precedence: 3, func: (l, r) => l >> u(r) },
+        // Relational is looser than shift (JS: shift > relational > equality).
+        "<=": { precedence: 3, func: (l, r) => l <= u(r) },
+        ">=": { precedence: 3, func: (l, r) => l >= u(r) },
+        "<": { precedence: 3, func: (l, r) => l < u(r) },
+        ">": { precedence: 3, func: (l, r) => l > u(r) },
 
-        "<=": { precedence: 4, func: (l, r) => l <= u(r) },
-        ">=": { precedence: 4, func: (l, r) => l >= u(r) },
-        "<": { precedence: 4, func: (l, r) => l < u(r) },
-        ">": { precedence: 4, func: (l, r) => l > u(r) },
+        "<<": { precedence: 4, func: (l, r) => l << u(r) },
+        ">>>": { precedence: 4, func: (l, r) => l >>> u(r) },
+        ">>": { precedence: 4, func: (l, r) => l >> u(r) },
 
         "+": { precedence: 5, func: (l, r) => l + u(r) },
         "-": { precedence: 5, func: (l, r) => l - u(r) },

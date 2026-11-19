@@ -101,7 +101,14 @@ export class Tokenizer {
         return e;
     }
 
-    protected getExp(): Expression {
+    /**
+     * Parse an expression. `allowTernary` is false only when consuming the
+     * right-hand side of a binary operator: ternary `? :` has lower precedence
+     * than any binary operator, so letting a recursive getExp swallow `? :`
+     * made "age >= 18 ? a : b" parse as age >= (18 ? a : b). Keeping ternary
+     * in the caller's loop lets the whole binary chain become the predicate.
+     */
+    protected getExp(allowTernary = true): Expression {
         this.skip();
 
         let e: Expression = this.tryLiteral()
@@ -125,7 +132,7 @@ export class Tokenizer {
                 || this.tryIndexer(e)
                 || this.tryFunc(e)
                 || this.tryCall(e)
-                || this.tryTernary(e)
+                || (allowTernary ? this.tryTernary(e) : null)
                 || this.tryBinary(e);
         } while (e);
 
@@ -458,7 +465,9 @@ export class Tokenizer {
             return null;
         }
 
-        const right = this.getExp();
+        // Ternary stays in the outer getExp loop; the binary RHS must not
+        // swallow it or the predicate shrinks to a single primary.
+        const right = this.getExp(false);
 
         if (right.type === ExpressionType.Binary) {
             return this.fixPrecedence(e, op, right as BinaryExpression);

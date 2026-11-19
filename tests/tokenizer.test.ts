@@ -294,4 +294,44 @@ describe("Tokenizer tests", () => {
         expect(evaluate(tokenize("-(4 + 6)"))).toBe(-10);
         expect(evaluate(tokenize("--5"))).toBe(5);
     });
+
+    it("should wrap the whole binary chain as the ternary predicate", () => {
+        // (age >= 18) ? "adult" : "minor", not age >= (18 ? "adult" : "minor")
+        const e = tokenize<TernaryExpression>('age >= 18 ? "adult" : "minor"');
+        expect(e.type).toBe(ExpressionType.Ternary);
+        expect(e.predicate.type).toBe(ExpressionType.Binary);
+        expect((e.predicate as BinaryExpression).operator).toBe(">=");
+
+        expect(evaluate(tokenize('age >= 18 ? "adult" : "minor"'), { age: 30 })).toBe("adult");
+        expect(evaluate(tokenize('n % 2 ? "odd" : "even"'), { n: 3 })).toBe("odd");
+        expect(evaluate(tokenize("a == b ? 1 : 2"), { a: 1, b: 1 })).toBe(1);
+        // Nested ternary inside whenTrue/whenFalse and groups still works
+        expect(evaluate(tokenize("a ? b : c ? d : e"), { a: 0, b: 1, c: 1, d: 2, e: 3 })).toBe(2);
+        expect(evaluate(tokenize("(a ? b : c) + 1"), { a: 1, b: 10, c: 20 })).toBe(11);
+    });
+
+    it("should order bitwise operators &, ^, | per JS precedence", () => {
+        // a | (b & c), not (a | b) & c
+        expect(evaluate(tokenize("a | b & c"), { a: 1, b: 2, c: 2 })).toBe(3);
+        // a ^ (b & c): 1 ^ (3 & 2) = 1 ^ 2 = 3
+        expect(evaluate(tokenize("a ^ b & c"), { a: 1, b: 3, c: 2 })).toBe(3);
+        // (a ^ b) | c: equal-tier ^ is tighter than |
+        expect(evaluate(tokenize("a | b ^ c"), { a: 1, b: 3, c: 2 })).toBe(1 | (3 ^ 2));
+
+        const e = tokenize<BinaryExpression>("a | b & c");
+        expect(e.operator).toBe("|");
+        expect(e.right.type).toBe(ExpressionType.Binary);
+        expect((e.right as BinaryExpression).operator).toBe("&");
+    });
+
+    it("should bind shift tighter than relational operators", () => {
+        // (a << 1) < b, not a << (1 < b)
+        expect(evaluate(tokenize("a << 1 < b"), { a: 1, b: 3 })).toBe(true);
+        expect(evaluate(tokenize("a >> 1 >= b"), { a: 8, b: 4 })).toBe(true);
+
+        const e = tokenize<BinaryExpression>("a << 1 < b");
+        expect(e.operator).toBe("<");
+        expect(e.left.type).toBe(ExpressionType.Binary);
+        expect((e.left as BinaryExpression).operator).toBe("<<");
+    });
 });
